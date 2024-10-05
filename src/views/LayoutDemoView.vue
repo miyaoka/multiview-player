@@ -9,23 +9,35 @@ const rectAspectRatio = ref(16 / 9);
 
 const cellCountList = computed(() => enumerateCellCounts({ count: rectCount.value }));
 
-interface CellRect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+interface CellLayout {
+  title: string;
+  isHorizontal: boolean;
+  rectArea: number;
+  cellCount: {
+    horizontal: number;
+    vertical: number;
+  };
+  spanList: number[];
+  columnTemplate: string;
 }
-const cellRectList = computed<
-  {
-    title: string;
-    isHorizontal: boolean;
-    rectArea: number;
-    cellList: CellRect[];
-  }[]
->(() => {
+const cellRectList = computed<CellLayout[]>(() => {
   const result = cellCountList.value.map((cellCount) => {
     const { horizontal, vertical } = cellCount;
-    const cellList = [];
+
+    const totalCellCount = horizontal * vertical;
+    // 余ったcellの数
+    const remainingCells = totalCellCount - rectCount.value;
+
+    const firstRowColumns = horizontal - remainingCells;
+    const otherRowColumns = horizontal;
+    // 1つの基本単位の幅を計算
+    // 最小公倍数を使って基本単位を決定
+    const lcm = getLCM(firstRowColumns, otherRowColumns);
+
+    // グリッドテンプレート列を設定
+    const columnTemplate = `repeat(${lcm}, 1fr)`;
+
+    const spanList = [];
     const cellWidth = canvasWidth.value / horizontal;
     const cellHeight = canvasHeight.value / vertical;
     const cellAspectRatio = cellWidth / cellHeight;
@@ -40,26 +52,49 @@ const cellRectList = computed<
     const rectArea = rectWidth * rectHeight;
     const title = `${horizontal}x${vertical}`;
 
-    for (let i = 0; i < vertical; i++) {
-      for (let j = 0; j < horizontal; j++) {
-        cellList.push({
-          x: j * cellWidth,
-          y: i * cellHeight,
-          width: cellWidth,
-          height: cellHeight,
-        });
+    const grow = horizontal - remainingCells;
+    for (let v = 0; v < vertical; v++) {
+      for (let h = 0; h < horizontal; h++) {
+        const cellIndex = v * horizontal + h;
+        spanList.push(lcm / (cellIndex < grow ? firstRowColumns : otherRowColumns));
       }
     }
     return {
       title,
       isHorizontal,
       rectArea,
-      cellList,
+      spanList,
+      cellCount,
+      columnTemplate,
+      remainingCells,
     };
   });
 
   return result.sort((a, b) => b.rectArea - a.rectArea);
 });
+
+function getStyle(cellLayout: CellLayout) {
+  const { horizontal, vertical } = cellLayout.cellCount;
+
+  return {
+    display: "grid",
+    width: `${canvasWidth.value}px`,
+    height: `${canvasHeight.value}px`,
+
+    gridTemplateColumns: cellLayout.columnTemplate, // horizontal列
+    gridTemplateRows: Array.from({ length: vertical }, () => "1fr").join(" "), // vertical行
+  };
+}
+
+// 最大公約数を求める関数
+function getGCD(a: number, b: number): number {
+  return b === 0 ? a : getGCD(b, a % b);
+}
+
+// 最小公倍数を求める関数
+function getLCM(a: number, b: number): number {
+  return (a * b) / getGCD(a, b);
+}
 </script>
 
 <template>
@@ -94,10 +129,7 @@ const cellRectList = computed<
         v-for="(cellRectPattern, i) in cellRectList"
         :key="i"
         class="relative outline"
-        :style="{
-          width: `${canvasWidth}px`,
-          height: `${canvasHeight}px`,
-        }"
+        :style="getStyle(cellRectPattern)"
       >
         <div class="absolute right-full flex flex-col px-2">
           <p>{{ cellRectPattern.title }}</p>
@@ -107,16 +139,17 @@ const cellRectList = computed<
           <p>
             {{ cellRectPattern.rectArea.toFixed(1) }}
           </p>
+          <p>
+            remainingCells:
+            {{ cellRectPattern.remainingCells }}
+          </p>
         </div>
         <div
-          v-for="(cellRect, j) in cellRectPattern.cellList"
+          v-for="(span, j) in cellRectPattern.spanList"
           :key="j"
-          class="absolute flex items-center justify-center outline outline-1 outline-gray-300"
+          class="flex items-center justify-center overflow-hidden outline outline-1 outline-gray-300"
           :style="{
-            left: `${cellRect.x}px`,
-            top: `${cellRect.y}px`,
-            width: `${cellRect.width}px`,
-            height: `${cellRect.height}px`,
+            gridColumn: `span ${span}`,
           }"
         >
           <div
