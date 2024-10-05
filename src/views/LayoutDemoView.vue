@@ -1,25 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { useRoute } from "vue-router";
 import { enumerateCellCounts } from "@/libs/canvas";
-
-const route = useRoute();
-
-const vidList = computed(() => {
-  const v = route.query.v;
-
-  const vv = Array.isArray(v) ? v[0] : v;
-  if (!vv) return [];
-
-  return vv.split(",");
-});
 
 const canvasWidth = ref(400);
 const canvasHeight = ref(300);
-const videoCount = ref(5);
-const aspectRatio = ref(16 / 9);
+const rectCount = ref(5);
+const rectAspectRatio = ref(16 / 9);
 
-const cellCountList = computed(() => enumerateCellCounts({ count: videoCount.value }));
+const cellCountList = computed(() => enumerateCellCounts({ count: rectCount.value }));
 
 interface CellRect {
   x: number;
@@ -27,35 +15,50 @@ interface CellRect {
   width: number;
   height: number;
 }
-const cellRectList = computed<{ isHorizontal: boolean; list: CellRect[] }[]>(() => {
-  return cellCountList.value.map((cellCount) => {
+const cellRectList = computed<
+  {
+    title: string;
+    isHorizontal: boolean;
+    rectArea: number;
+    cellList: CellRect[];
+  }[]
+>(() => {
+  const result = cellCountList.value.map((cellCount) => {
     const { horizontal, vertical } = cellCount;
-    const list = [];
+    const cellList = [];
     const cellWidth = canvasWidth.value / horizontal;
     const cellHeight = canvasHeight.value / vertical;
     const cellAspectRatio = cellWidth / cellHeight;
 
-    // videoのaspectRatioよりcellのaspectRatioが大きい場合はcellHeightを使う
+    // rectのaspectRatioよりcellのaspectRatioが大きい場合はcellHeightを使う
 
-    // cellがvideoより横長か
-    const isHorizontal = cellAspectRatio > aspectRatio.value;
+    // cellがrectより横長か
+    const isHorizontal = cellAspectRatio > rectAspectRatio.value;
+
+    const rectWidth = isHorizontal ? cellHeight * rectAspectRatio.value : cellWidth;
+    const rectHeight = isHorizontal ? cellHeight : cellWidth / rectAspectRatio.value;
+    const rectArea = rectWidth * rectHeight;
+    const title = `${horizontal}x${vertical}`;
 
     for (let i = 0; i < vertical; i++) {
       for (let j = 0; j < horizontal; j++) {
-        list.push({
+        cellList.push({
           x: j * cellWidth,
           y: i * cellHeight,
           width: cellWidth,
           height: cellHeight,
-          isHorizontal,
         });
       }
     }
     return {
+      title,
       isHorizontal,
-      list,
+      rectArea,
+      cellList,
     };
   });
+
+  return result.sort((a, b) => b.rectArea - a.rectArea);
 });
 </script>
 
@@ -71,12 +74,12 @@ const cellRectList = computed<{ isHorizontal: boolean; list: CellRect[] }[]>(() 
         <input type="range" v-model="canvasHeight" min="50" max="500" step="1" />
       </label>
       <label>
-        <p>Video Count: {{ videoCount }}</p>
-        <input type="range" v-model="videoCount" min="1" max="16" step="1" />
+        <p>Rect Count: {{ rectCount }}</p>
+        <input type="range" v-model="rectCount" min="1" max="16" step="1" />
       </label>
       <label>
-        <p>Aspect Ratio: {{ Number(aspectRatio).toFixed(2) }}</p>
-        <input type="range" v-model="aspectRatio" min="1" max="4" step="0.01" />
+        <p>Rect Aspect Ratio: {{ Number(rectAspectRatio).toFixed(2) }}</p>
+        <input type="range" v-model="rectAspectRatio" min="1" max="4" step="0.01" />
       </label>
       <div>
         <p>Cell Count List</p>
@@ -96,9 +99,17 @@ const cellRectList = computed<{ isHorizontal: boolean; list: CellRect[] }[]>(() 
           height: `${canvasHeight}px`,
         }"
       >
-        <div class="absolute right-full px-2">#{{ i + 1 }}</div>
+        <div class="absolute right-full flex flex-col px-2">
+          <p>{{ cellRectPattern.title }}</p>
+          <p>
+            {{ cellRectPattern.isHorizontal ? "Horizontal" : "Vertical" }}
+          </p>
+          <p>
+            {{ cellRectPattern.rectArea.toFixed(1) }}
+          </p>
+        </div>
         <div
-          v-for="(cellRect, j) in cellRectPattern.list"
+          v-for="(cellRect, j) in cellRectPattern.cellList"
           :key="j"
           class="absolute flex items-center justify-center outline outline-1 outline-gray-300"
           :style="{
@@ -109,10 +120,10 @@ const cellRectList = computed<{ isHorizontal: boolean; list: CellRect[] }[]>(() 
           }"
         >
           <div
-            v-if="j < videoCount"
+            v-if="j < rectCount"
             :class="`bg-gray-600 text-white text-sm flex items-center justify-center ${cellRectPattern.isHorizontal ? 'h-full' : 'w-full'}`"
             :style="{
-              aspectRatio: `${aspectRatio}`,
+              aspectRatio: `${rectAspectRatio}`,
             }"
           >
             {{ j + 1 }}
@@ -120,18 +131,5 @@ const cellRectList = computed<{ isHorizontal: boolean; list: CellRect[] }[]>(() 
         </div>
       </div>
     </div>
-
-    <!--
-    <iframe
-      v-for="vid in vidList"
-      :key="vid"
-      class="video"
-      :src="`https://www.youtube.com/embed/${vid}`"
-      title="YouTube video player"
-      frameborder="0"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-      referrerpolicy="strict-origin-when-cross-origin"
-      allowfullscreen
-    ></iframe>
-  --></main>
+  </main>
 </template>
