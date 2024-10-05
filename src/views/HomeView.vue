@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { useEventListener } from "@vueuse/core";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useRoute } from "vue-router";
+import { enumerateCellCounts } from "@/libs/canvas";
 
 const route = useRoute();
 
@@ -14,58 +14,114 @@ const vidList = computed(() => {
   return vv.split(",");
 });
 
-function adjustGrid(videosCount: number) {
-  const container = document.querySelector(".container") as HTMLElement;
-  if (!container) return;
-  const videos = document.querySelectorAll(".video") as NodeListOf<HTMLElement>;
-  if (videos.length === 0) return;
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-  const aspectRatio = 16 / 9;
+const canvasWidth = ref(400);
+const canvasHeight = ref(300);
+const videoCount = ref(5);
+const aspectRatio = ref(16 / 9);
 
-  let bestColumns = 1;
-  let bestRows = videosCount;
-  let maxVideoSize = 0;
+const cellCountList = computed(() => enumerateCellCounts({ count: videoCount.value }));
 
-  // 動画を並べる最適な行数と列数を決めるためにループする
-  for (let columns = 1; columns <= videosCount; columns++) {
-    const rows = Math.ceil(videosCount / columns);
+interface CellRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+const cellRectList = computed<{ isHorizontal: boolean; list: CellRect[] }[]>(() => {
+  return cellCountList.value.map((cellCount) => {
+    const { horizontal, vertical } = cellCount;
+    const list = [];
+    const cellWidth = canvasWidth.value / horizontal;
+    const cellHeight = canvasHeight.value / vertical;
+    const cellAspectRatio = cellWidth / cellHeight;
 
-    // 動画1つあたりの幅と高さを計算する
-    const videoWidth = width / columns;
-    const videoHeight = videoWidth / aspectRatio;
+    // videoのaspectRatioよりcellのaspectRatioが大きい場合はcellHeightを使う
 
-    // 高さが画面内に収まる場合のみ考慮する
-    if (videoHeight * rows <= height) {
-      const totalVideoSize = videoWidth * videoHeight; // 各配置パターンでの動画の面積
+    // cellがvideoより横長か
+    const isHorizontal = cellAspectRatio > aspectRatio.value;
 
-      // 最も大きく表示できる列・行の組み合わせを選択
-      if (totalVideoSize > maxVideoSize) {
-        maxVideoSize = totalVideoSize;
-        bestColumns = columns;
-        bestRows = rows;
+    for (let i = 0; i < vertical; i++) {
+      for (let j = 0; j < horizontal; j++) {
+        list.push({
+          x: j * cellWidth,
+          y: i * cellHeight,
+          width: cellWidth,
+          height: cellHeight,
+          isHorizontal,
+        });
       }
     }
-  }
-
-  // グリッドレイアウトの設定
-  container.style.gridTemplateColumns = `repeat(${bestColumns}, 1fr)`;
-  container.style.gridTemplateRows = `repeat(${bestRows}, 1fr)`;
-
-  // 各動画のサイズを設定
-  videos.forEach((video) => {
-    video.style.width = "100%";
-    video.style.height = "100%";
+    return {
+      isHorizontal,
+      list,
+    };
   });
-}
-
-useEventListener("resize", () => {
-  adjustGrid(vidList.value.length);
 });
 </script>
 
 <template>
-  <main class="container">
+  <main class="grid place-items-center p-4">
+    <div class="fixed left-2 top-2 z-10 flex flex-col bg-gray-100 p-2 shadow">
+      <label>
+        <p>Canvas Width: {{ canvasWidth }}</p>
+        <input type="range" v-model="canvasWidth" min="50" max="500" step="1" />
+      </label>
+      <label>
+        <p>Canvas Height: {{ canvasHeight }}</p>
+        <input type="range" v-model="canvasHeight" min="50" max="500" step="1" />
+      </label>
+      <label>
+        <p>Video Count: {{ videoCount }}</p>
+        <input type="range" v-model="videoCount" min="1" max="16" step="1" />
+      </label>
+      <label>
+        <p>Aspect Ratio: {{ Number(aspectRatio).toFixed(2) }}</p>
+        <input type="range" v-model="aspectRatio" min="1" max="4" step="0.01" />
+      </label>
+      <div>
+        <p>Cell Count List</p>
+        <ul>
+          <li v-for="(cellCount, i) in cellCountList" :key="i">{{ cellCount }}</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid gap-10">
+      <div
+        v-for="(cellRectPattern, i) in cellRectList"
+        :key="i"
+        class="relative outline"
+        :style="{
+          width: `${canvasWidth}px`,
+          height: `${canvasHeight}px`,
+        }"
+      >
+        <div class="absolute right-full px-2">#{{ i + 1 }}</div>
+        <div
+          v-for="(cellRect, j) in cellRectPattern.list"
+          :key="j"
+          class="absolute flex items-center justify-center outline outline-1 outline-gray-300"
+          :style="{
+            left: `${cellRect.x}px`,
+            top: `${cellRect.y}px`,
+            width: `${cellRect.width}px`,
+            height: `${cellRect.height}px`,
+          }"
+        >
+          <div
+            v-if="j < videoCount"
+            :class="`bg-gray-600 text-white text-sm flex items-center justify-center ${cellRectPattern.isHorizontal ? 'h-full' : 'w-full'}`"
+            :style="{
+              aspectRatio: `${aspectRatio}`,
+            }"
+          >
+            {{ j + 1 }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--
     <iframe
       v-for="vid in vidList"
       :key="vid"
@@ -77,21 +133,5 @@ useEventListener("resize", () => {
       referrerpolicy="strict-origin-when-cross-origin"
       allowfullscreen
     ></iframe>
-  </main>
+  --></main>
 </template>
-
-<style scoped>
-.container {
-  display: grid;
-  width: 100vw;
-  height: 100vh;
-}
-
-.video {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 16 / 9;
-  background-color: #000; /* 動画背景 */
-  object-fit: cover;
-}
-</style>
