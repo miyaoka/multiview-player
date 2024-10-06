@@ -89,9 +89,15 @@ export function calculateGridLayout({
 
   let contentAreaTotal = 0;
   const cellList: GridCell[] = [];
+
+  // 各cellのspan数と横長フラグを計算
   for (let v = 0; v < rows; v++) {
     for (let h = 0; h < columns; h++) {
       const cellIndex = v * columns + h;
+
+      // contentCountを超えたら終了
+      if (cellIndex >= contentCount) break;
+
       // cellに割り当てるspan数
       const span = spanCount / (cellIndex < firstRowColumns ? firstRowColumns : otherRowColumns);
 

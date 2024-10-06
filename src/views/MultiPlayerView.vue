@@ -2,7 +2,7 @@
 import { useWindowSize } from "@vueuse/core";
 import { computed } from "vue";
 import { useRoute, type LocationQueryValue } from "vue-router";
-import { calculateGridLayout, enumerateGridDimensions } from "@/libs/grid";
+import { calculateGridLayout, enumerateGridDimensions, type GridLayout } from "@/libs/grid";
 
 const route = useRoute();
 const { width: windowWidth, height: windowHeight } = useWindowSize();
@@ -11,9 +11,9 @@ const sampleList = [
   "-w_wHBUVOe4",
   "cM_Gcwx-itQ",
   "gum19GF7sxg",
-  "CMJwr1nDmnc",
-  "h6-BNWk0GE4",
-  "_osdlijHr6U",
+  // "CMJwr1nDmnc",
+  // "h6-BNWk0GE4",
+  // "_osdlijHr6U",
 ];
 
 function queryValueToArray(queryValue: string | LocationQueryValue[]): string[] {
@@ -51,12 +51,13 @@ const gridLayout = computed<GridLayout>(() => {
     });
   });
 
-  return gridLayoutList.sort((a, b) => b.contentAreaTotal - a.contentAreaTotal)[0];
+  const topLayout = gridLayoutList.sort((a, b) => b.contentAreaTotal - a.contentAreaTotal)[0];
+  return topLayout;
 });
 </script>
 
 <template>
-  <main class="bg-black">
+  <main>
     <div
       class="grid h-screen w-screen outline"
       :style="{
@@ -66,27 +67,18 @@ const gridLayout = computed<GridLayout>(() => {
       <div
         v-for="(cell, cellIdx) in gridLayout.cellList"
         :key="cellIdx"
-        class="flex items-center justify-center overflow-hidden"
+        class="flex items-center justify-center overflow-hidden bg-gradient-to-b from-zinc-900 to-zinc-800"
         :style="{
           gridColumn: `span ${cell.span}`,
         }"
       >
-        <div
-          class="flex flex-col"
-          v-if="cellIdx < contentCount"
-          :class="`bg-gray-600 text-white text-sm flex items-center justify-center ${cell.isHorizontal ? 'h-full' : 'w-full'}`"
-          :style="{
-            aspectRatio: `${contentAspectRatio}`,
-          }"
-        >
-          <iframe
-            class="size-full"
-            :src="`https://www.youtube.com/embed/${vidList[cellIdx]}`"
-            title="YouTube video player"
-            frameborder="0"
-            allowfullscreen
-          ></iframe>
-        </div>
+        <iframe
+          :class="`aspect-video ${cell.isHorizontal ? 'h-full' : 'w-full'}`"
+          :src="`https://www.youtube.com/embed/${vidList[cellIdx]}`"
+          title="YouTube video player"
+          frameborder="0"
+          allowfullscreen
+        ></iframe>
       </div>
     </div>
   </main>
