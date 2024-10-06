@@ -17,9 +17,9 @@ export interface GridLayout {
 // 指定したカウントで必要な縦横セル数の組み合わせを列挙
 export function enumerateGridDimensions({ count }: { count: number }): GridDimensions[] {
   const results: GridDimensions[] = [];
-  for (let horizontal = 1; horizontal <= count; horizontal++) {
-    const vertical = Math.ceil(count / horizontal);
-    results.push({ columns: horizontal, rows: vertical });
+  for (let columns = 1; columns <= count; columns++) {
+    const rows = Math.ceil(count / columns);
+    results.push({ columns, rows });
   }
   return results;
 }
