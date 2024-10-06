@@ -1,20 +1,24 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { calculateGridLayout, enumerateCellCounts, type GridLayout } from "@/libs/canvas";
+import { calculateGridLayout, enumerateGridDimensions, type GridLayout } from "@/libs/canvas";
 
-const canvasWidth = ref(400);
-const canvasHeight = ref(300);
+const numberFormatter = new Intl.NumberFormat("en-US", {
+  maximumFractionDigits: 0,
+});
+
+const containerWidth = ref(400);
+const containerHeight = ref(300);
 const contentCount = ref(5);
 const contentAspectRatio = ref(16 / 9);
 
-const cellCountList = computed(() => enumerateCellCounts({ count: contentCount.value }));
+const gridDimensionList = computed(() => enumerateGridDimensions({ count: contentCount.value }));
 
 const gridLayoutList = computed<GridLayout[]>(() => {
-  const result = cellCountList.value.map((cellCount) => {
+  const result = gridDimensionList.value.map((gridDimension) => {
     return calculateGridLayout({
-      canvasWidth: canvasWidth.value,
-      canvasHeight: canvasHeight.value,
-      cellCount,
+      containerWidth: containerWidth.value,
+      containerHeight: containerHeight.value,
+      gridDimension,
       contentCount: contentCount.value,
       contentAspectRatio: contentAspectRatio.value,
     });
@@ -28,12 +32,12 @@ const gridLayoutList = computed<GridLayout[]>(() => {
   <main class="grid place-items-center p-4">
     <div class="fixed left-2 top-2 z-10 flex flex-col bg-gray-100 p-2 shadow">
       <label>
-        <p>Canvas Width: {{ canvasWidth }}</p>
-        <input type="range" v-model="canvasWidth" min="50" max="1000" step="1" />
+        <p>Container Width: {{ containerWidth }}</p>
+        <input type="range" v-model="containerWidth" min="50" max="1000" step="1" />
       </label>
       <label>
-        <p>Canvas Height: {{ canvasHeight }}</p>
-        <input type="range" v-model="canvasHeight" min="50" max="1000" step="1" />
+        <p>Container Height: {{ containerHeight }}</p>
+        <input type="range" v-model="containerHeight" min="50" max="1000" step="1" />
       </label>
       <label>
         <p>Content Count: {{ contentCount }}</p>
@@ -43,12 +47,6 @@ const gridLayoutList = computed<GridLayout[]>(() => {
         <p>Content Aspect Ratio: {{ Number(contentAspectRatio).toFixed(2) }}</p>
         <input type="range" v-model="contentAspectRatio" min="1" max="4" step="0.01" />
       </label>
-      <div>
-        <p>Cell Count List</p>
-        <ul>
-          <li v-for="(cellCount, i) in cellCountList" :key="i">{{ cellCount }}</li>
-        </ul>
-      </div>
     </div>
 
     <div class="grid gap-10">
@@ -60,7 +58,7 @@ const gridLayoutList = computed<GridLayout[]>(() => {
         <div class="absolute right-full flex flex-col px-2">
           <p>
             contentAreaTotal:
-            {{ gridLayout.contentAreaTotal.toFixed(1) }}
+            {{ numberFormatter.format(gridLayout.contentAreaTotal) }}
           </p>
         </div>
 
@@ -68,8 +66,8 @@ const gridLayoutList = computed<GridLayout[]>(() => {
           class="grid outline"
           :style="{
             ...gridLayout.gridStyle,
-            width: `${canvasWidth}px`,
-            height: `${canvasHeight}px`,
+            width: `${containerWidth}px`,
+            height: `${containerHeight}px`,
           }"
         >
           <div

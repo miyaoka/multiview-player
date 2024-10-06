@@ -1,20 +1,6 @@
-// 最適な縦横セル数を計算
-export function calculateOptimalCellCount(
-  containerWidth: number,
-  containerHeight: number,
-  contentAspectRatio: number,
-  contentCount: number,
-): GridCellCount {
-  const hCellCount = Math.ceil(
-    Math.sqrt((contentCount * containerWidth) / containerHeight / contentAspectRatio),
-  );
-  const vCellCount = Math.ceil(contentCount / hCellCount);
-  return { hCellCount, vCellCount };
-}
-
-interface GridCellCount {
-  hCellCount: number;
-  vCellCount: number;
+interface GridDimensions {
+  columns: number; // 横セル数
+  rows: number; // 縦セル数
 }
 
 export interface GridCell {
@@ -29,11 +15,11 @@ export interface GridLayout {
 }
 
 // 指定したカウントで必要な縦横セル数の組み合わせを列挙
-export function enumerateCellCounts({ count }: { count: number }): GridCellCount[] {
-  const results: GridCellCount[] = [];
+export function enumerateGridDimensions({ count }: { count: number }): GridDimensions[] {
+  const results: GridDimensions[] = [];
   for (let horizontal = 1; horizontal <= count; horizontal++) {
     const vertical = Math.ceil(count / horizontal);
-    results.push({ hCellCount: horizontal, vCellCount: vertical });
+    results.push({ columns: horizontal, rows: vertical });
   }
   return results;
 }
@@ -63,30 +49,28 @@ export function calculateAreaInCell(
 }
 
 export function calculateGridLayout({
-  canvasWidth,
-  canvasHeight,
-  cellCount,
+  containerWidth,
+  containerHeight,
+  gridDimension,
   contentCount,
   contentAspectRatio,
 }: {
-  canvasWidth: number;
-  canvasHeight: number;
-  cellCount: GridCellCount;
+  containerWidth: number;
+  containerHeight: number;
+  gridDimension: GridDimensions;
   contentCount: number;
   contentAspectRatio: number;
 }): GridLayout {
-  const { hCellCount, vCellCount } = cellCount;
+  const { columns, rows } = gridDimension;
 
-  // const title = `${hCellCount}x${vCellCount}`;
-
-  const totalCellCount = hCellCount * vCellCount;
+  const totalCellCount = columns * rows;
   // 余るcellの数
   const remainingCells = totalCellCount - contentCount;
 
   // 1列目はは余るcellの分減らしてカラム幅を広げる
-  const firstRowColumns = hCellCount - remainingCells;
+  const firstRowColumns = columns - remainingCells;
   // 2列目以降はそのまま
-  const otherRowColumns = hCellCount;
+  const otherRowColumns = columns;
 
   // gridのspan数を計算
   // 1列目と2列目のカラム数の最小公倍数を使って基本単位を決定
@@ -95,19 +79,19 @@ export function calculateGridLayout({
   // グリッドテンプレート列を設定
   const gridStyle = {
     gridTemplateColumns: `repeat(${spanCount}, 1fr)`, // horizontal列
-    gridTemplateRows: Array.from({ length: vCellCount }, () => "1fr").join(" "), // vertical行
+    gridTemplateRows: Array.from({ length: rows }, () => "1fr").join(" "), // vertical行
   };
 
   // span幅
-  const spanWidth = canvasWidth / spanCount;
+  const spanWidth = containerWidth / spanCount;
   // cellの高さ
-  const cellHeight = canvasHeight / vCellCount;
+  const cellHeight = containerHeight / rows;
 
   let contentAreaTotal = 0;
   const cellList: GridCell[] = [];
-  for (let v = 0; v < vCellCount; v++) {
-    for (let h = 0; h < hCellCount; h++) {
-      const cellIndex = v * hCellCount + h;
+  for (let v = 0; v < rows; v++) {
+    for (let h = 0; h < columns; h++) {
+      const cellIndex = v * columns + h;
       // cellに割り当てるspan数
       const span = spanCount / (cellIndex < firstRowColumns ? firstRowColumns : otherRowColumns);
 
