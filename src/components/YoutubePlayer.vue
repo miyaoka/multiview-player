@@ -111,34 +111,34 @@ defineExpose({
 
 <template>
   <div
-    class="group/player size-full outline outline-4 -outline-offset-4 outline-transparent"
+    class="group/player flex size-full items-center justify-center outline outline-4 -outline-offset-4 outline-transparent"
     :style="volumeStyle"
   >
     <div
-      class="absolute right-0 top-0 z-10 flex flex-row items-center justify-center rounded-full bg-white px-4 opacity-0 group-hover/player:opacity-100"
+      class="absolute top-4 z-10 flex flex-row items-center justify-center rounded-full bg-white px-4 opacity-0 shadow-md outline group-hover/player:opacity-100"
     >
       <button
         :disabled="props.index === 0"
-        class="grid size-11 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
+        class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
         @click="moveIndex(-1)"
       >
         <i class="i-mdi-chevron-up size-8" />
       </button>
       <button
         :disabled="props.index === props.count - 1"
-        class=":disabled:opacity-20 grid size-11 place-items-center rounded-full hover:bg-gray-200"
+        class=":disabled:opacity-20 grid size-10 place-items-center rounded-full hover:bg-gray-200"
         @click="moveIndex(1)"
       >
         <i class="i-mdi-chevron-down size-8" />
       </button>
       <button
-        class="grid size-11 place-items-center rounded-full hover:bg-gray-200"
+        class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
         @click="toggleMute"
       >
         <i :class="`${isMuted ? 'i-mdi-volume-off' : 'i-mdi-volume-high'} size-8`" />
       </button>
       <button
-        class="grid size-11 place-items-center rounded-full hover:bg-gray-200"
+        class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
         @click="emit('remove', props.videoId)"
       >
         <i class="i-mdi-cross-circle size-8" />

@@ -124,40 +124,13 @@ watch(
 </script>
 
 <template>
-  <main>
+  <main class="group relative">
     <div
-      class="group grid h-screen w-screen outline"
+      class="grid h-screen w-screen outline"
       :style="{
         ...gridLayout.gridStyle,
       }"
     >
-      <div
-        class="absolute right-0 top-0 z-10 flex flex-row items-center justify-center rounded-full bg-white px-4 opacity-0 group-hover:opacity-100"
-      >
-        <button
-          class="grid size-11 place-items-center rounded-full hover:bg-gray-200"
-          @click="playAll"
-        >
-          <i class="i-mdi-play size-8" />
-        </button>
-
-        <button
-          class="grid size-11 place-items-center rounded-full hover:bg-gray-200"
-          @click="pauseAll"
-        >
-          <i class="i-mdi-pause size-8" />
-        </button>
-
-        <button
-          class="grid size-11 place-items-center rounded-full hover:bg-gray-200"
-          @click="muteAll"
-        >
-          <i class="i-mdi-volume-mute size-8" />
-        </button>
-        <button class="grid size-11 place-items-center rounded-full hover:bg-gray-200">
-          <i class="i-mdi-add size-8" />
-        </button>
-      </div>
       <div
         v-for="(cell, i) in cellList"
         :key="cell.videoId"
@@ -178,6 +151,33 @@ watch(
           />
         </div>
       </div>
+    </div>
+    <div
+      class="absolute right-2 top-2 z-10 flex items-center justify-center rounded-full bg-yellow-400 px-4 opacity-0 shadow-md outline group-hover:opacity-100"
+    >
+      <button
+        class="grid size-11 place-items-center rounded-full hover:bg-yellow-200"
+        @click="playAll"
+      >
+        <i class="i-mdi-play size-8" />
+      </button>
+
+      <button
+        class="grid size-11 place-items-center rounded-full hover:bg-yellow-200"
+        @click="pauseAll"
+      >
+        <i class="i-mdi-pause size-8" />
+      </button>
+
+      <button
+        class="grid size-11 place-items-center rounded-full hover:bg-yellow-200"
+        @click="muteAll"
+      >
+        <i class="i-mdi-volume-mute size-8" />
+      </button>
+      <button class="grid size-11 place-items-center rounded-full hover:bg-yellow-200">
+        <i class="i-mdi-add size-8" />
+      </button>
     </div>
   </main>
 </template>
