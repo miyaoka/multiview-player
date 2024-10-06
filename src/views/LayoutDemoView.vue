@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { calculateGridLayout, enumerateGridDimensions, type GridLayout } from "@/libs/canvas";
+import { calculateGridLayout, enumerateGridDimensions, type GridLayout } from "@/libs/grid";
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,

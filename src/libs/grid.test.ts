@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calculateAreaInCell, enumerateGridDimensions } from "./canvas";
+import { calculateAreaInCell, enumerateGridDimensions } from "./grid";
 
 describe("calculateAreaInCell", () => {
   it("cellのaspect ratioのほうが大きい場合、cellの高さに合わせる", () => {
