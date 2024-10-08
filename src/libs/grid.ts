@@ -9,7 +9,13 @@ export interface GridCell {
 }
 
 export interface GridLayout {
-  contentAreaTotal: number;
+  id: string;
+  contentArea: {
+    total: number;
+    min: number;
+    max: number;
+  };
+  // contentAreaTotal: number;
   cellList: GridCell[];
   gridStyle: Record<string, string>;
 }
@@ -62,67 +68,102 @@ export function calculateGridLayout({
   contentAspectRatio: number;
 }): GridLayout {
   const { columns, rows } = gridDimension;
+  // gridDimensionからidを作成する
+  const id = `${gridDimension.columns}x${gridDimension.rows}`;
 
+  // cellの総数
   const totalCellCount = columns * rows;
   // 余るcellの数
   const remainingCells = totalCellCount - contentCount;
 
   // 1列目はは余るcellの分減らしてカラム幅を広げる
-  const firstRowColumns = columns - remainingCells;
+  const firstRowColumnCount = columns - remainingCells;
   // 2列目以降はそのまま
-  const otherRowColumns = columns;
+  const secondRowColumnCount = columns;
 
   // gridのspan数を計算
   // 1列目と2列目のカラム数の最小公倍数を使って基本単位を決定
-  const spanCount = getLCM(firstRowColumns, otherRowColumns);
+  const spanCount = getLCM(firstRowColumnCount, secondRowColumnCount);
 
-  // グリッドテンプレート列を設定
-  const gridStyle = {
-    gridTemplateColumns: `repeat(${spanCount}, 1fr)`, // horizontal列
-    gridTemplateRows: Array.from({ length: rows }, () => "1fr").join(" "), // vertical行
-  };
-
-  // span幅
-  const spanWidth = containerWidth / spanCount;
   // cellの高さ
   const cellHeight = containerHeight / rows;
 
   let contentAreaTotal = 0;
   const cellList: GridCell[] = [];
 
+  // 1列目の最大height
+  const firstRowCellWidth = containerWidth / firstRowColumnCount;
+  const firstRowMaxHeight = firstRowCellWidth / contentAspectRatio;
+
+  // 2列目以降の最小height
+  const secondRowCellWidth = containerWidth / secondRowColumnCount;
+  const secondRowMinHeight = Math.min(cellHeight, secondRowCellWidth / contentAspectRatio);
+
+  const secondRowCount = rows - 1;
+  // 2列目以降の最小heightの合計
+  const secondRowMinHeightTotal = secondRowCount * secondRowMinHeight;
+
+  // 1行目の高さを決定
+  const firstRowHeight =
+    secondRowCount === 0
+      ? containerHeight
+      : Math.min(containerHeight - secondRowMinHeightTotal, firstRowMaxHeight);
+
+  // 2行目以降の高さを決定
+  const secondRowHeight = (containerHeight - firstRowHeight) / secondRowCount;
+
+  const firstRowCellAspectRatio = firstRowCellWidth / firstRowHeight;
+  const firstRowCellIsHorizontal = firstRowCellAspectRatio > contentAspectRatio;
+  const firstRowContentHeight = firstRowCellIsHorizontal
+    ? firstRowHeight
+    : firstRowCellWidth / contentAspectRatio;
+
+  const firstRowContentArea = firstRowContentHeight * firstRowContentHeight * contentAspectRatio;
+
+  const secondRowCellAspectRatio = secondRowCellWidth / secondRowHeight;
+  const secondRowCellIsHorizontal = secondRowCellAspectRatio > contentAspectRatio;
+  const secondRowContentHeight = secondRowCellIsHorizontal
+    ? secondRowHeight
+    : secondRowCellWidth / contentAspectRatio;
+  const secondRowContentArea = secondRowContentHeight * secondRowContentHeight * contentAspectRatio;
+
   // 各cellのspan数と横長フラグを計算
-  for (let v = 0; v < rows; v++) {
-    for (let h = 0; h < columns; h++) {
-      const cellIndex = v * columns + h;
+  for (let cellIndex = 0; cellIndex < contentCount; cellIndex++) {
+    const isFirstRow = cellIndex < firstRowColumnCount;
+    // cellに割り当てるspan数
+    const span = spanCount / (isFirstRow ? firstRowColumnCount : secondRowColumnCount);
+    const isHorizontal = isFirstRow ? firstRowCellIsHorizontal : secondRowCellIsHorizontal;
+    const contentArea = isFirstRow ? firstRowContentArea : secondRowContentArea;
 
-      // contentCountを超えたら終了
-      if (cellIndex >= contentCount) break;
+    cellList.push({
+      span,
+      isHorizontal,
+    });
 
-      // cellに割り当てるspan数
-      const span = spanCount / (cellIndex < firstRowColumns ? firstRowColumns : otherRowColumns);
-
-      // セル幅とアスペクト比を算出
-      const cellWidth = spanWidth * span;
-      const cellAspectRatio = cellWidth / cellHeight;
-
-      // cellがcontentより横長か
-      const isHorizontal = cellAspectRatio > contentAspectRatio;
-
-      const contentWidth = isHorizontal ? cellHeight * contentAspectRatio : cellWidth;
-      const contentHeight = isHorizontal ? cellHeight : cellWidth / contentAspectRatio;
-
-      cellList.push({
-        span,
-        isHorizontal,
-      });
-
-      contentAreaTotal += contentWidth * contentHeight;
-    }
+    contentAreaTotal += contentArea;
   }
 
+  // コンテンツ以外の余白を計算
+  const rowSpace =
+    containerHeight - (firstRowContentHeight + secondRowContentHeight * secondRowCount);
+
+  // グリッドテンプレート列を設定
+  const gridStyle = {
+    gridTemplateColumns: `repeat(${spanCount}, 1fr)`, // horizontal列
+    gridTemplateRows:
+      secondRowCount > 0
+        ? `${firstRowHeight + rowSpace / rows}px ${Array.from({ length: secondRowCount }, () => "1fr").join(" ")}`
+        : "1fr", // vertical行
+  };
+
   return {
+    id,
     cellList,
-    contentAreaTotal,
+    contentArea: {
+      total: contentAreaTotal,
+      min: secondRowContentArea,
+      max: firstRowContentArea,
+    },
     gridStyle,
   };
 }
@@ -135,4 +176,80 @@ function getGCD(a: number, b: number): number {
 // 最小公倍数を求める関数
 function getLCM(a: number, b: number): number {
   return (a * b) / getGCD(a, b);
+}
+
+// 候補の中から最適なレイアウトを選択
+export function selectOptimalLayout({
+  gridDimensionList,
+  containerWidth,
+  containerHeight,
+  contentCount,
+  contentAspectRatio,
+}: {
+  gridDimensionList: GridDimensions[];
+  containerWidth: number;
+  containerHeight: number;
+  contentCount: number;
+  contentAspectRatio: number;
+}): {
+  minAreaDeviation: number;
+  totalAreaDeviation: number;
+  minAndtotalAreaDeviation: number;
+  layout: GridLayout;
+}[] {
+  const result = gridDimensionList.map((gridDimension) => {
+    return calculateGridLayout({
+      containerWidth,
+      containerHeight,
+      gridDimension,
+      contentCount,
+      contentAspectRatio,
+    });
+  });
+
+  // min, totalの合計値を計算
+  let minAreaSum = 0;
+  let totalAreaSum = 0;
+  result.forEach((item) => {
+    minAreaSum += item.contentArea.min;
+    totalAreaSum += item.contentArea.total;
+  });
+
+  // min, totalの平均値を計算
+  const minAreaAverage = minAreaSum / result.length;
+  const totalAreaAverage = totalAreaSum / result.length;
+
+  // 分散を計算
+  let minVariance = 0;
+  let totalVariance = 0;
+  result.forEach((item) => {
+    minVariance += Math.pow(item.contentArea.min - minAreaAverage, 2);
+    totalVariance += Math.pow(item.contentArea.total - totalAreaAverage, 2);
+  });
+
+  // 分散のsqrtを計算
+  minVariance = Math.sqrt(minVariance / result.length);
+  totalVariance = Math.sqrt(totalVariance / result.length);
+
+  // 偏差値を計算
+  const result2 = result.map((item) => {
+    // minareaの偏差値
+    const minAreaDeviation = (item.contentArea.min - minAreaAverage) / minVariance;
+    // totalareaの偏差値
+    const totalAreaDeviation = (item.contentArea.total - totalAreaAverage) / totalVariance;
+    // minareaとtotalareaの偏差値の合計値
+    const minAndtotalAreaDeviation = minAreaDeviation + totalAreaDeviation;
+
+    return {
+      layout: item,
+      minAreaDeviation,
+      totalAreaDeviation,
+      minAndtotalAreaDeviation,
+    };
+  });
+
+  // 偏差値の合計値でソート
+  result2.sort((a, b) => b.minAndtotalAreaDeviation - a.minAndtotalAreaDeviation);
+
+  return result2;
 }

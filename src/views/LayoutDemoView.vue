@@ -1,30 +1,33 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { calculateGridLayout, enumerateGridDimensions, type GridLayout } from "@/libs/grid";
+import { enumerateGridDimensions, selectOptimalLayout, type GridLayout } from "@/libs/grid";
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-const containerWidth = ref(400);
+const containerWidth = ref(500);
 const containerHeight = ref(300);
 const contentCount = ref(5);
 const contentAspectRatio = ref(16 / 9);
 
 const gridDimensionList = computed(() => enumerateGridDimensions({ count: contentCount.value }));
 
-const gridLayoutList = computed<GridLayout[]>(() => {
-  const result = gridDimensionList.value.map((gridDimension) => {
-    return calculateGridLayout({
-      containerWidth: containerWidth.value,
-      containerHeight: containerHeight.value,
-      gridDimension,
-      contentCount: contentCount.value,
-      contentAspectRatio: contentAspectRatio.value,
-    });
+const gridLayoutList = computed<
+  {
+    minAreaDeviation: number;
+    totalAreaDeviation: number;
+    minAndtotalAreaDeviation: number;
+    layout: GridLayout;
+  }[]
+>(() => {
+  return selectOptimalLayout({
+    gridDimensionList: gridDimensionList.value,
+    containerWidth: containerWidth.value,
+    containerHeight: containerHeight.value,
+    contentCount: contentCount.value,
+    contentAspectRatio: contentAspectRatio.value,
   });
-
-  return result.sort((a, b) => b.contentAreaTotal - a.contentAreaTotal);
 });
 </script>
 
@@ -50,28 +53,45 @@ const gridLayoutList = computed<GridLayout[]>(() => {
     </div>
 
     <div class="grid gap-10">
-      <div
-        class="relative"
-        v-for="(gridLayout, gridLayoutIdx) in gridLayoutList"
-        :key="gridLayoutIdx"
-      >
+      <div class="relative" v-for="(item, gridLayoutIdx) in gridLayoutList" :key="gridLayoutIdx">
         <div class="absolute right-full flex flex-col px-2">
+          <p>{{ item.layout.id }}</p>
           <p>
-            contentAreaTotal:
-            {{ numberFormatter.format(gridLayout.contentAreaTotal) }}
+            min:
+            {{ numberFormatter.format(item.layout.contentArea.min) }}
+          </p>
+          <p>
+            max:
+            {{ numberFormatter.format(item.layout.contentArea.max) }}
+          </p>
+          <p>
+            total:
+            {{ numberFormatter.format(item.layout.contentArea.total) }}
+          </p>
+          <p>
+            min dev:
+            {{ item.minAreaDeviation.toFixed(5) }}
+          </p>
+          <p>
+            total dev:
+            {{ item.totalAreaDeviation.toFixed(5) }}
+          </p>
+          <p>
+            minAndtotal dev:
+            {{ item.minAndtotalAreaDeviation.toFixed(5) }}
           </p>
         </div>
 
         <div
           class="grid outline"
           :style="{
-            ...gridLayout.gridStyle,
+            ...item.layout.gridStyle,
             width: `${containerWidth}px`,
             height: `${containerHeight}px`,
           }"
         >
           <div
-            v-for="(cell, cellIdx) in gridLayout.cellList"
+            v-for="(cell, cellIdx) in item.layout.cellList"
             :key="cellIdx"
             class="flex items-center justify-center overflow-hidden outline outline-1 outline-gray-300"
             :style="{
@@ -79,17 +99,14 @@ const gridLayoutList = computed<GridLayout[]>(() => {
             }"
           >
             <div
-              class="flex flex-col"
+              class="relative flex flex-col"
               v-if="cellIdx < contentCount"
-              :class="`bg-gray-600 text-white text-sm flex items-center justify-center ${cell.isHorizontal ? 'h-full' : 'w-full'}`"
+              :class="`bg-gray-500 text-white text-sm flex items-center justify-center outline outline-1 -outline-offset-1 outline-white ${cell.isHorizontal ? 'h-full' : 'w-full'}`"
               :style="{
                 aspectRatio: `${contentAspectRatio}`,
               }"
             >
               <p>#{{ cellIdx }}</p>
-              <p>
-                {{ cell.span }}
-              </p>
             </div>
           </div>
         </div>

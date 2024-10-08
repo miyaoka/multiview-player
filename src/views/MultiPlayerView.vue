@@ -4,7 +4,7 @@ import { computed, ref, watch } from "vue";
 import { useRoute, useRouter, type LocationQueryValue } from "vue-router";
 import type YoutubePlayerComponent from "@/components/YoutubePlayer.vue";
 import YoutubePlayer from "@/components/YoutubePlayer.vue";
-import { calculateGridLayout, enumerateGridDimensions, type GridLayout } from "@/libs/grid";
+import { enumerateGridDimensions, selectOptimalLayout, type GridLayout } from "@/libs/grid";
 import { getYouTubeVideoId } from "@/libs/youtube";
 
 const route = useRoute();
@@ -27,20 +27,18 @@ const urlInput = ref("");
 
 const contentCount = computed(() => vidList.value.length);
 
-const gridLayout = computed<GridLayout | null>(() => {
+const gridLayout = computed<GridLayout | undefined>(() => {
   const gridDimensionList = enumerateGridDimensions({ count: vidList.value.length });
-  const gridLayoutList = gridDimensionList.map((gridDimension) => {
-    return calculateGridLayout({
-      containerWidth: windowWidth.value,
-      containerHeight: windowHeight.value,
-      gridDimension,
-      contentCount: contentCount.value,
-      contentAspectRatio,
-    });
-  });
 
-  const topLayout = gridLayoutList.sort((a, b) => b.contentAreaTotal - a.contentAreaTotal)[0];
-  return topLayout;
+  const list = selectOptimalLayout({
+    gridDimensionList,
+    containerWidth: windowWidth.value,
+    containerHeight: windowHeight.value,
+    contentCount: vidList.value.length,
+    contentAspectRatio,
+  });
+  const topLayout = list[0];
+  return topLayout?.layout;
 });
 
 const cellList = computed(() => {
@@ -162,7 +160,7 @@ function onUrlsSubmit(e: Event) {
       <div
         v-for="(cell, i) in cellList"
         :key="cell.videoId"
-        class="relative flex items-center justify-center overflow-hidden bg-gradient-to-b from-zinc-900 to-zinc-800"
+        class="relative flex items-center justify-center overflow-hidden bg-zinc-900 shadow-[inset_10px_10px_50px_rgb(0_0_0_/_0.5)]"
         :style="{
           gridColumn: `span ${cell.span}`,
         }"
