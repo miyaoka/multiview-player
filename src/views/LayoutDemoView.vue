@@ -6,7 +6,7 @@ const numberFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-const containerWidth = ref(400);
+const containerWidth = ref(630);
 const containerHeight = ref(300);
 const contentCount = ref(5);
 const contentAspectRatio = ref(16 / 9);
