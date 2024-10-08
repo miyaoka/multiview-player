@@ -4,7 +4,11 @@ import { computed, ref, watch } from "vue";
 import { useRoute, useRouter, type LocationQueryValue } from "vue-router";
 import type YoutubePlayerComponent from "@/components/YoutubePlayer.vue";
 import YoutubePlayer from "@/components/YoutubePlayer.vue";
-import { calculateGridLayout, enumerateGridDimensions, type GridLayout } from "@/libs/grid";
+import {
+  enumerateGridDimensions,
+  selectOptimalLayout,
+  type GridLayout,
+} from "@/libs/grid";
 import { getYouTubeVideoId } from "@/libs/youtube";
 
 const route = useRoute();
@@ -27,20 +31,18 @@ const urlInput = ref("");
 
 const contentCount = computed(() => vidList.value.length);
 
-const gridLayout = computed<GridLayout | null>(() => {
+const gridLayout = computed<GridLayout | undefined>(() => {
   const gridDimensionList = enumerateGridDimensions({ count: vidList.value.length });
-  const gridLayoutList = gridDimensionList.map((gridDimension) => {
-    return calculateGridLayout({
-      containerWidth: windowWidth.value,
-      containerHeight: windowHeight.value,
-      gridDimension,
-      contentCount: contentCount.value,
-      contentAspectRatio,
-    });
-  });
 
-  const topLayout = gridLayoutList.sort((a, b) => b.contentAreaTotal - a.contentAreaTotal)[0];
-  return topLayout;
+  const list = selectOptimalLayout({
+    gridDimensionList,
+    containerWidth: windowWidth.value,
+    containerHeight: windowHeight.value,
+    contentCount: vidList.value.length,
+    contentAspectRatio,
+  });
+  const topLayout = list[0];
+  return topLayout?.layout;
 });
 
 const cellList = computed(() => {
