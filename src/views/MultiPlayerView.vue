@@ -12,12 +12,12 @@ const router = useRouter();
 const { width: windowWidth, height: windowHeight } = useWindowSize();
 
 const sampleList: string[] = [
-  // "-w_wHBUVOe4",
-  // "cM_Gcwx-itQ",
-  // "gum19GF7sxg",
-  // "CMJwr1nDmnc",
-  // "h6-BNWk0GE4",
-  // "_osdlijHr6U",
+  "-w_wHBUVOe4",
+  "cM_Gcwx-itQ",
+  "gum19GF7sxg",
+  "CMJwr1nDmnc",
+  "h6-BNWk0GE4",
+  "_osdlijHr6U",
 ];
 
 const contentAspectRatio = 16 / 9;
@@ -51,6 +51,20 @@ const cellList = computed(() => {
   });
 });
 
+const templateAreas = computed(() => {
+  const cellList = gridLayout.value?.cellList;
+  if (!cellList) return "";
+
+  const areaList = vidList.value.map((vid, i) => {
+    const areaName = `a-${vid}`;
+    const cell = cellList[i];
+    const area = Array.from({ length: cell.span }, () => areaName).join(" ");
+    return `'${area}'`;
+  });
+
+  return areaList;
+});
+
 function removeVideo(id: string) {
   vidList.value = vidList.value.filter((vid) => vid !== id);
 }
@@ -67,8 +81,11 @@ function unmuteVideo(id: string) {
     player.mute();
   });
 }
+
+const playCount = ref(0);
 function playAll() {
   if (!playerRefs.value) return;
+  playCount.value++;
   playerRefs.value.forEach((playerRef) => {
     const player = playerRef.player;
     if (!player) return;
@@ -144,28 +161,58 @@ function onUrlsSubmit(e: Event) {
 
   updateQuery(mergedList);
 }
+
+const gridStyle = computed(() => {
+  const layout = gridLayout.value;
+  if (!layout) return {};
+
+  const [firstRowArea, ...restRowArea] = templateAreas.value;
+
+  const gridTemplateList = [`${firstRowArea} ${layout.gridTemplateFirstRow}`];
+  restRowArea.forEach((area) => {
+    gridTemplateList.push(`${area} 1fr`);
+  });
+
+  const gridTemplate = `${gridTemplateList.join(" ")} / ${layout.gridTemplateColumns}`;
+
+  console.log("gridTemplate", gridTemplate);
+
+  const template1 = `'c0 c0 c0' 587.75px
+     'c1 c2 c3' 1fr
+     'c4 c5 .' 1fr / 1fr 1fr 1fr`;
+  const template2 = `'c2 c2 c2' 587.75px
+     'c0 c1 c3' 1fr
+     'c4 c5 .' 1fr / 1fr 1fr 1fr`;
+
+  return playCount.value % 2 === 0 ? { gridTemplate: template1 } : { gridTemplate: template2 };
+
+  // return {
+  //   // gridTemplateColumns: "repeat(3, 1fr)",
+  //   gridTemplate: `'c0 c0 c0' 587.75px
+  //    'c1 c2 c3' 1fr
+  //    'c4 c5 .' 1fr / 1fr 1fr 1fr`,
+
+  //   // gridTemplateAreas: gridTemplateAreas.value,
+
+  //   // "header header header" 2fr
+  //   //     "sidebar content content" 1fr
+  //   //     "footer footer footer" 1fr / 1fr 2fr 1fr;
+  // };
+});
 </script>
 
 <template>
   <main
     class="group relative flex h-screen w-screen items-center justify-center bg-gradient-to-b from-zinc-900 to-zinc-800"
   >
-    <div
-      v-if="gridLayout"
-      class="grid size-full"
-      :style="{
-        ...gridLayout.gridStyle,
-      }"
-    >
+    <div v-if="gridLayout" class="grid size-full" :style="gridStyle">
       <div
         v-for="(cell, i) in cellList"
         :key="cell.videoId"
-        class="relative flex items-center justify-center overflow-hidden bg-zinc-900 shadow-[inset_10px_10px_50px_rgb(0_0_0_/_0.5)]"
-        :style="{
-          gridColumn: `span ${cell.span}`,
-        }"
+        class="_cell relative flex items-center justify-center overflow-hidden bg-zinc-900 shadow-[inset_10px_10px_50px_rgb(0_0_0_/_0.5)]"
+        :style="`grid-area: c${i}`"
       >
-        <div :class="`relative aspect-video ${cell.isHorizontal ? 'h-full' : 'w-full'}`">
+        <div class="_inner relative aspect-video">
           <YoutubePlayer
             :video-id="cell.videoId"
             :index="i"
@@ -251,3 +298,21 @@ function onUrlsSubmit(e: Event) {
     </div>
   </main>
 </template>
+
+<style scoped>
+._cell {
+  container-type: size;
+}
+._inner {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  height: auto;
+}
+
+@container (aspect-ratio > 16/9) {
+  ._inner {
+    width: auto;
+    height: 100%;
+  }
+}
+</style>

@@ -54,7 +54,7 @@ const gridLayoutList = computed<
 
     <div class="grid gap-10">
       <div class="relative" v-for="(item, gridLayoutIdx) in gridLayoutList" :key="gridLayoutIdx">
-        <div class="absolute right-full flex flex-col px-2">
+        <div class="absolute right-full flex w-60 flex-col px-2">
           <p>{{ item.layout.id }}</p>
           <p>
             min:

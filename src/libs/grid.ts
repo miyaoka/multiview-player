@@ -17,7 +17,9 @@ export interface GridLayout {
   };
   // contentAreaTotal: number;
   cellList: GridCell[];
-  gridStyle: Record<string, string>;
+  // gridStyle: Record<string, string>;
+  gridTemplateColumns: string;
+  gridTemplateFirstRow: string;
 }
 
 // 指定したカウントで必要な縦横セル数の組み合わせを列挙
@@ -156,6 +158,9 @@ export function calculateGridLayout({
         : "1fr", // vertical行
   };
 
+  const gridTemplateColumns = `repeat(${spanCount}, 1fr)`; // horizontal列
+  const gridTemplateFirstRow = secondRowCount > 0 ? `${firstRowHeight + rowSpace / rows}px` : "1fr";
+
   return {
     id,
     cellList,
@@ -164,7 +169,8 @@ export function calculateGridLayout({
       min: secondRowContentArea,
       max: firstRowContentArea,
     },
-    gridStyle,
+    gridTemplateColumns,
+    gridTemplateFirstRow,
   };
 }
 
