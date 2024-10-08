@@ -63,6 +63,7 @@ export function calculateGridLayout({
 }): GridLayout {
   const { columns, rows } = gridDimension;
 
+  // cellの総数
   const totalCellCount = columns * rows;
   // 余るcellの数
   const remainingCells = totalCellCount - contentCount;
@@ -91,33 +92,26 @@ export function calculateGridLayout({
   const cellList: GridCell[] = [];
 
   // 各cellのspan数と横長フラグを計算
-  for (let v = 0; v < rows; v++) {
-    for (let h = 0; h < columns; h++) {
-      const cellIndex = v * columns + h;
+  for (let cellIndex = 0; cellIndex < contentCount; cellIndex++) {
+    // cellに割り当てるspan数
+    const span = spanCount / (cellIndex < firstRowColumns ? firstRowColumns : otherRowColumns);
 
-      // contentCountを超えたら終了
-      if (cellIndex >= contentCount) break;
+    // セル幅とアスペクト比を算出
+    const cellWidth = spanWidth * span;
+    const cellAspectRatio = cellWidth / cellHeight;
 
-      // cellに割り当てるspan数
-      const span = spanCount / (cellIndex < firstRowColumns ? firstRowColumns : otherRowColumns);
+    // cellがcontentより横長か
+    const isHorizontal = cellAspectRatio > contentAspectRatio;
 
-      // セル幅とアスペクト比を算出
-      const cellWidth = spanWidth * span;
-      const cellAspectRatio = cellWidth / cellHeight;
+    const contentWidth = isHorizontal ? cellHeight * contentAspectRatio : cellWidth;
+    const contentHeight = isHorizontal ? cellHeight : cellWidth / contentAspectRatio;
 
-      // cellがcontentより横長か
-      const isHorizontal = cellAspectRatio > contentAspectRatio;
+    cellList.push({
+      span,
+      isHorizontal,
+    });
 
-      const contentWidth = isHorizontal ? cellHeight * contentAspectRatio : cellWidth;
-      const contentHeight = isHorizontal ? cellHeight : cellWidth / contentAspectRatio;
-
-      cellList.push({
-        span,
-        isHorizontal,
-      });
-
-      contentAreaTotal += contentWidth * contentHeight;
-    }
+    contentAreaTotal += contentWidth * contentHeight;
   }
 
   return {
