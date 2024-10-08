@@ -1,18 +1,14 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import {
-  enumerateGridDimensions,
-  selectOptimalLayout,
-  type GridLayout,
-} from "@/libs/grid";
+import { enumerateGridDimensions, selectOptimalLayout, type GridLayout } from "@/libs/grid";
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-const containerWidth = ref(697);
+const containerWidth = ref(500);
 const containerHeight = ref(300);
-const contentCount = ref(3);
+const contentCount = ref(5);
 const contentAspectRatio = ref(16 / 9);
 
 const gridDimensionList = computed(() => enumerateGridDimensions({ count: contentCount.value }));
@@ -22,7 +18,6 @@ const gridLayoutList = computed<
     minAreaDeviation: number;
     totalAreaDeviation: number;
     minAndtotalAreaDeviation: number;
-    id: string;
     layout: GridLayout;
   }[]
 >(() => {
@@ -60,7 +55,7 @@ const gridLayoutList = computed<
     <div class="grid gap-10">
       <div class="relative" v-for="(item, gridLayoutIdx) in gridLayoutList" :key="gridLayoutIdx">
         <div class="absolute right-full flex flex-col px-2">
-          <p>{{ item.id }}</p>
+          <p>{{ item.layout.id }}</p>
           <p>
             min:
             {{ numberFormatter.format(item.layout.contentArea.min) }}

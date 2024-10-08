@@ -4,11 +4,7 @@ import { computed, ref, watch } from "vue";
 import { useRoute, useRouter, type LocationQueryValue } from "vue-router";
 import type YoutubePlayerComponent from "@/components/YoutubePlayer.vue";
 import YoutubePlayer from "@/components/YoutubePlayer.vue";
-import {
-  enumerateGridDimensions,
-  selectOptimalLayout,
-  type GridLayout,
-} from "@/libs/grid";
+import { enumerateGridDimensions, selectOptimalLayout, type GridLayout } from "@/libs/grid";
 import { getYouTubeVideoId } from "@/libs/youtube";
 
 const route = useRoute();
@@ -164,7 +160,7 @@ function onUrlsSubmit(e: Event) {
       <div
         v-for="(cell, i) in cellList"
         :key="cell.videoId"
-        class="relative flex items-center justify-center overflow-hidden bg-gradient-to-b from-zinc-900 to-zinc-800"
+        class="relative flex items-center justify-center overflow-hidden bg-zinc-900 shadow-[inset_10px_10px_50px_rgb(0_0_0_/_0.5)]"
         :style="{
           gridColumn: `span ${cell.span}`,
         }"

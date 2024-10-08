@@ -9,6 +9,7 @@ export interface GridCell {
 }
 
 export interface GridLayout {
+  id: string;
   contentArea: {
     total: number;
     min: number;
@@ -67,6 +68,8 @@ export function calculateGridLayout({
   contentAspectRatio: number;
 }): GridLayout {
   const { columns, rows } = gridDimension;
+  // gridDimensionからidを作成する
+  const id = `${gridDimension.columns}x${gridDimension.rows}`;
 
   // cellの総数
   const totalCellCount = columns * rows;
@@ -114,6 +117,7 @@ export function calculateGridLayout({
   const firstRowContentHeight = firstRowCellIsHorizontal
     ? firstRowHeight
     : firstRowCellWidth / contentAspectRatio;
+
   const firstRowContentArea = firstRowContentHeight * firstRowContentHeight * contentAspectRatio;
 
   const secondRowCellAspectRatio = secondRowCellWidth / secondRowHeight;
@@ -139,16 +143,21 @@ export function calculateGridLayout({
     contentAreaTotal += contentArea;
   }
 
+  // コンテンツ以外の余白を計算
+  const rowSpace =
+    containerHeight - (firstRowContentHeight + secondRowContentHeight * secondRowCount);
+
   // グリッドテンプレート列を設定
   const gridStyle = {
     gridTemplateColumns: `repeat(${spanCount}, 1fr)`, // horizontal列
     gridTemplateRows:
       secondRowCount > 0
-        ? `${firstRowHeight}px ${Array.from({ length: secondRowCount }, () => "1fr").join(" ")}`
+        ? `${firstRowHeight + rowSpace / rows}px ${Array.from({ length: secondRowCount }, () => "1fr").join(" ")}`
         : "1fr", // vertical行
   };
 
   return {
+    id,
     cellList,
     contentArea: {
       total: contentAreaTotal,
@@ -186,30 +195,24 @@ export function selectOptimalLayout({
   minAreaDeviation: number;
   totalAreaDeviation: number;
   minAndtotalAreaDeviation: number;
-  id: string;
   layout: GridLayout;
 }[] {
   const result = gridDimensionList.map((gridDimension) => {
-    // gridDimensionからidを作成する
-    const id = `${gridDimension.columns}x${gridDimension.rows}`;
-    return {
-      id,
-      layout: calculateGridLayout({
-        containerWidth,
-        containerHeight,
-        gridDimension,
-        contentCount,
-        contentAspectRatio,
-      }),
-    };
+    return calculateGridLayout({
+      containerWidth,
+      containerHeight,
+      gridDimension,
+      contentCount,
+      contentAspectRatio,
+    });
   });
 
   // min, totalの合計値を計算
   let minAreaSum = 0;
   let totalAreaSum = 0;
   result.forEach((item) => {
-    minAreaSum += item.layout.contentArea.min;
-    totalAreaSum += item.layout.contentArea.total;
+    minAreaSum += item.contentArea.min;
+    totalAreaSum += item.contentArea.total;
   });
 
   // min, totalの平均値を計算
@@ -220,8 +223,8 @@ export function selectOptimalLayout({
   let minVariance = 0;
   let totalVariance = 0;
   result.forEach((item) => {
-    minVariance += Math.pow(item.layout.contentArea.min - minAreaAverage, 2);
-    totalVariance += Math.pow(item.layout.contentArea.total - totalAreaAverage, 2);
+    minVariance += Math.pow(item.contentArea.min - minAreaAverage, 2);
+    totalVariance += Math.pow(item.contentArea.total - totalAreaAverage, 2);
   });
 
   // 分散のsqrtを計算
@@ -230,20 +233,23 @@ export function selectOptimalLayout({
 
   // 偏差値を計算
   const result2 = result.map((item) => {
-    // minの偏差値
-    const minAreaDeviation = (item.layout.contentArea.min - minAreaAverage) / minVariance;
-    const totalAreaDeviation = (item.layout.contentArea.total - totalAreaAverage) / totalVariance;
+    // minareaの偏差値
+    const minAreaDeviation = (item.contentArea.min - minAreaAverage) / minVariance;
+    // totalareaの偏差値
+    const totalAreaDeviation = (item.contentArea.total - totalAreaAverage) / totalVariance;
+    // minareaとtotalareaの偏差値の合計値
+    const minAndtotalAreaDeviation = minAreaDeviation + totalAreaDeviation;
 
     return {
-      ...item,
+      layout: item,
       minAreaDeviation,
       totalAreaDeviation,
-      minAndtotalAreaDeviation: minAreaDeviation + totalAreaDeviation,
+      minAndtotalAreaDeviation,
     };
   });
 
+  // 偏差値の合計値でソート
   result2.sort((a, b) => b.minAndtotalAreaDeviation - a.minAndtotalAreaDeviation);
-  console.log("result2", result2);
 
   return result2;
 }
