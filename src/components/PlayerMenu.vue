@@ -30,7 +30,7 @@ function remove() {
 
 <template>
   <div
-    class="absolute top-4 z-10 flex flex-row items-center justify-center rounded-full bg-white px-4 opacity-0 shadow-md outline group-hover/player:opacity-100"
+    class="absolute top-4 z-10 flex flex-row items-center justify-center rounded-full bg-white px-4 shadow-md outline"
   >
     <button
       :disabled="!hasPrev"
@@ -50,7 +50,7 @@ function remove() {
       <i :class="`${isMuted ? 'i-mdi-volume-off' : 'i-mdi-volume-high'} size-8`" />
     </button>
     <button class="grid size-10 place-items-center rounded-full hover:bg-gray-200" @click="remove">
-      <i class="i-mdi-cross-circle size-8" />
+      <i class="i-mdi-trash-can-outline size-8" />
     </button>
   </div>
 </template>

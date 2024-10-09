@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useEventListener } from "@vueuse/core";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import YoutubePlayerFactory from "youtube-player";
 import { type YouTubePlayer } from "youtube-player/dist/types";
@@ -26,6 +27,8 @@ const player = ref<YouTubePlayer | null>(null);
 const isMuted = ref(true);
 const isPaused = ref(true);
 const volume = ref(0);
+const rootEl = ref<HTMLElement | null>(null);
+const isFocused = ref(false);
 
 const volumeStyle = computed(() => {
   if (isMuted.value || volume.value === 0) return null;
@@ -90,14 +93,24 @@ onBeforeUnmount(() => {
   player.value.destroy();
   player.value = null;
 });
+
+// マウスが入ったらフォーカス状態にする
+useEventListener(rootEl, "pointerenter", () => {
+  isFocused.value = true;
+});
+// マウスが出たらフォーカス状態を解除
+useEventListener(rootEl, "pointerleave", () => {
+  isFocused.value = false;
+});
 </script>
 
 <template>
   <div
-    class="group/player flex size-full items-center justify-center outline outline-4 -outline-offset-4 outline-transparent"
+    class="flex size-full items-center justify-center outline outline-4 -outline-offset-4 outline-transparent"
     :style="volumeStyle"
+    ref="rootEl"
   >
-    <PlayerMenu :videoId="videoId" :index="index" :isMuted="isMuted" />
+    <PlayerMenu v-if="isFocused" :videoId="videoId" :index="index" :isMuted="isMuted" />
     <div :id="elementId" />
   </div>
 </template>
