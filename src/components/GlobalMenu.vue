@@ -92,6 +92,44 @@ function toggleOpen() {
     </div>
     <div v-if="isOpen" class="flex flex-col items-end justify-center">
       <div class="flex items-center">
+        <button
+          :disabled="!hasVideos"
+          class="relative grid size-11 place-items-center rounded-full hover:bg-yellow-200 disabled:opacity-20"
+          title="Seek all -10m"
+          @click="playerStore.seekOffsetAll(-10 * 60)"
+        >
+          <i class="i-mdi-rewind size-7" />
+          <p class="absolute bottom-0 text-xs font-bold">-10m</p>
+        </button>
+        <button
+          :disabled="!hasVideos"
+          class="relative grid size-11 place-items-center rounded-full hover:bg-yellow-200 disabled:opacity-20"
+          title="Seek all -1m"
+          @click="playerStore.seekOffsetAll(-60)"
+        >
+          <i class="i-mdi-rewind size-6" />
+          <p class="absolute bottom-0 text-xs font-bold">-1m</p>
+        </button>
+        <button
+          :disabled="!hasVideos"
+          class="relative grid size-11 place-items-center rounded-full hover:bg-yellow-200 disabled:opacity-20"
+          title="Seek all +1m"
+          @click="playerStore.seekOffsetAll(60)"
+        >
+          <i class="i-mdi-fast-forward size-6" />
+          <p class="absolute bottom-0 text-xs font-bold">+1m</p>
+        </button>
+        <button
+          :disabled="!hasVideos"
+          class="relative grid size-11 place-items-center rounded-full hover:bg-yellow-200 disabled:opacity-20"
+          title="Seek all +10m"
+          @click="playerStore.seekOffsetAll(10 * 60)"
+        >
+          <i class="i-mdi-fast-forward size-7" />
+          <p class="absolute bottom-0 text-xs font-bold">+10m</p>
+        </button>
+      </div>
+      <!-- <div class="flex items-center">
         連結してシーク
         <button
           :disabled="!hasVideos"
@@ -107,7 +145,7 @@ function toggleOpen() {
             {{ playerStore.isSyncSeek ? "ON" : "OFF" }}
           </p>
         </button>
-      </div>
+      </div> -->
       <div class="flex items-center">
         動画を追加
         <button
@@ -122,7 +160,7 @@ function toggleOpen() {
           popover
           ref="editListPopoverEl"
           id="editListPopover"
-          class="bottom-auto left-auto right-2 top-16 overflow-visible bg-transparent p-0"
+          class="bottom-auto left-auto right-2 top-2 overflow-visible bg-transparent p-0"
         >
           <div class="flex max-h-dvh w-full flex-col overflow-hidden rounded-lg bg-white outline">
             <div class="flex min-h-11 place-items-center bg-gray-200 px-4 font-bold">

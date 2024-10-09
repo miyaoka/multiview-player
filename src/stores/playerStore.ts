@@ -50,6 +50,13 @@ export const usePlayerStore = defineStore("playerStore", () => {
       player.mute();
     });
   }
+  function seekOffsetAll(offset: number) {
+    playerMap.value.forEach((player) => {
+      player.getCurrentTime().then((time) => {
+        player.seekTo(time + offset, true);
+      });
+    });
+  }
   return {
     playerMap,
     isSyncSeek,
@@ -60,5 +67,6 @@ export const usePlayerStore = defineStore("playerStore", () => {
     pauseAll,
     muteAll,
     unmuteVideo,
+    seekOffsetAll,
   };
 });
