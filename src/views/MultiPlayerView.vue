@@ -41,29 +41,15 @@ const gridLayout = computed<GridLayout | undefined>(() => {
   return topLayout?.layout;
 });
 
-const cellList = computed(() => {
-  if (!gridLayout.value) return [];
-  return gridLayout.value.cellList.map((cell, i) => {
-    return {
-      ...cell,
-      videoId: vidList.value[i],
-    };
-  });
-});
-
-const templateAreas = computed(() => {
-  const cellList = gridLayout.value?.cellList;
-  if (!cellList) return "";
-
-  const areaList = vidList.value.map((vid, i) => {
-    const areaName = `a-${vid}`;
-    const cell = cellList[i];
-    const area = Array.from({ length: cell.span }, () => areaName).join(" ");
-    return `'${area}'`;
-  });
-
-  return areaList;
-});
+// const cellList = computed(() => {
+//   if (!gridLayout.value) return [];
+//   return gridLayout.value.spanList.map((cell, i) => {
+//     return {
+//       ...cell,
+//       videoId: vidList.value[i],
+//     };
+//   });
+// });
 
 function removeVideo(id: string) {
   vidList.value = vidList.value.filter((vid) => vid !== id);
@@ -166,16 +152,16 @@ const gridStyle = computed(() => {
   const layout = gridLayout.value;
   if (!layout) return {};
 
-  const [firstRowArea, ...restRowArea] = templateAreas.value;
+  console.log("layout", layout.spanList);
 
-  const gridTemplateList = [`${firstRowArea} ${layout.gridTemplateFirstRow}`];
-  restRowArea.forEach((area) => {
-    gridTemplateList.push(`${area} 1fr`);
-  });
+  // const [firstRowArea, ...restRowArea] = templateAreas.value;
 
-  const gridTemplate = `${gridTemplateList.join(" ")} / ${layout.gridTemplateColumns}`;
+  // const gridTemplateList = [`${firstRowArea} ${layout.gridTemplateFirstRow}`];
+  // restRowArea.forEach((area) => {
+  //   gridTemplateList.push(`${area} 1fr`);
+  // });
 
-  console.log("gridTemplate", gridTemplate);
+  // const gridTemplate = `${gridTemplateList.join(" ")} / ${layout.gridTemplateColumns}`;
 
   const template1 = `'c0 c0 c0' 587.75px
      'c1 c2 c3' 1fr
@@ -207,14 +193,14 @@ const gridStyle = computed(() => {
   >
     <div v-if="gridLayout" class="grid size-full" :style="gridStyle">
       <div
-        v-for="(cell, i) in cellList"
-        :key="cell.videoId"
+        v-for="(vid, i) in vidList"
+        :key="vid"
         class="_cell relative flex items-center justify-center overflow-hidden bg-zinc-900 shadow-[inset_10px_10px_50px_rgb(0_0_0_/_0.5)]"
         :style="`grid-area: c${i}`"
       >
         <div class="_inner relative aspect-video">
           <YoutubePlayer
-            :video-id="cell.videoId"
+            :video-id="vid"
             :index="i"
             :count="contentCount"
             ref="playerRefs"

@@ -58,7 +58,6 @@ function onPlayerStateChange(
     data: number;
   },
 ) {
-  console.log("onPlayerStateChange", e.data);
   const event = eventsMap.get(e.data);
   if (event === "playing") {
     isPaused.value = false;
@@ -80,7 +79,6 @@ function moveIndex(diff: number) {
 }
 
 onMounted(async () => {
-  console.log("elementId", player.value, elementId.value);
   const ytPlayer = YoutubePlayerFactory(elementId.value, {
     videoId: props.videoId,
     width: "100%",
@@ -100,7 +98,6 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  console.log("destroying player", player.value);
   if (!player.value) return;
   player.value.destroy();
   player.value = null;

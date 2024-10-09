@@ -36,19 +36,19 @@ const gridLayoutList = computed<
     <div class="fixed left-2 top-2 z-10 flex flex-col bg-gray-100 p-2 shadow">
       <label>
         <p>Container Width: {{ containerWidth }}</p>
-        <input type="range" v-model="containerWidth" min="50" max="1000" step="1" />
+        <input type="range" v-model.number="containerWidth" min="50" max="1000" step="1" />
       </label>
       <label>
         <p>Container Height: {{ containerHeight }}</p>
-        <input type="range" v-model="containerHeight" min="50" max="1000" step="1" />
+        <input type="range" v-model.number="containerHeight" min="50" max="1000" step="1" />
       </label>
       <label>
         <p>Content Count: {{ contentCount }}</p>
-        <input type="range" v-model="contentCount" min="1" max="20" step="1" />
+        <input type="range" v-model.number="contentCount" min="1" max="20" step="1" />
       </label>
       <label>
         <p>Content Aspect Ratio: {{ Number(contentAspectRatio).toFixed(2) }}</p>
-        <input type="range" v-model="contentAspectRatio" min="1" max="4" step="0.01" />
+        <input type="range" v-model.number="contentAspectRatio" min="1" max="4" step="0.01" />
       </label>
     </div>
 
@@ -80,28 +80,28 @@ const gridLayoutList = computed<
             minAndtotal dev:
             {{ item.minAndtotalAreaDeviation.toFixed(5) }}
           </p>
+          <p>
+            spanList:
+            {{ item.layout.gridTemplate }}
+          </p>
         </div>
 
         <div
           class="grid outline"
           :style="{
-            ...item.layout.gridStyle,
             width: `${containerWidth}px`,
             height: `${containerHeight}px`,
+            gridTemplate: item.layout.gridTemplate,
           }"
         >
           <div
-            v-for="(cell, cellIdx) in item.layout.cellList"
+            v-for="(_, cellIdx) in contentCount"
             :key="cellIdx"
-            class="flex items-center justify-center overflow-hidden outline outline-1 outline-gray-300"
-            :style="{
-              gridColumn: `span ${cell.span}`,
-            }"
+            class="_cell flex items-center justify-center overflow-hidden outline outline-1 outline-gray-300"
+            :style="`grid-area: a${cellIdx}`"
           >
             <div
-              class="relative flex flex-col"
-              v-if="cellIdx < contentCount"
-              :class="`bg-gray-500 text-white text-sm flex items-center justify-center outline outline-1 -outline-offset-1 outline-white ${cell.isHorizontal ? 'h-full' : 'w-full'}`"
+              class="relative flex flex-col items-center justify-center bg-gray-500 text-sm text-white outline outline-1 -outline-offset-1 outline-white"
               :style="{
                 aspectRatio: `${contentAspectRatio}`,
               }"
@@ -114,3 +114,19 @@ const gridLayoutList = computed<
     </div>
   </main>
 </template>
+
+<style scoped>
+._cell {
+  container-type: size;
+
+  & > div {
+    width: 100%;
+    height: auto;
+
+    @container (aspect-ratio > 16/9) {
+      width: auto;
+      height: 100%;
+    }
+  }
+}
+</style>
