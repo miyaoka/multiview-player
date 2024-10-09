@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useWindowSize } from "@vueuse/core";
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter, type LocationQueryValue } from "vue-router";
 import type YoutubePlayerComponent from "@/components/YoutubePlayer.vue";
 import YoutubePlayer from "@/components/YoutubePlayer.vue";
@@ -17,11 +17,13 @@ const sampleList: string[] = [
   "gum19GF7sxg",
   "CMJwr1nDmnc",
   "h6-BNWk0GE4",
-  "_osdlijHr6U",
+  // "_osdlijHr6U",
 ];
 
 const contentAspectRatio = 16 / 9;
 const vidList = ref<string[]>([]);
+const vidOrder = ref<string[]>([]);
+
 const playerRefs = ref<InstanceType<typeof YoutubePlayerComponent>[] | null>([]);
 const urlInput = ref("");
 
@@ -41,19 +43,6 @@ const gridLayout = computed<GridLayout | undefined>(() => {
   return topLayout?.layout;
 });
 
-// const cellList = computed(() => {
-//   if (!gridLayout.value) return [];
-//   return gridLayout.value.spanList.map((cell, i) => {
-//     return {
-//       ...cell,
-//       videoId: vidList.value[i],
-//     };
-//   });
-// });
-
-function removeVideo(id: string) {
-  vidList.value = vidList.value.filter((vid) => vid !== id);
-}
 function unmuteVideo(id: string) {
   if (!playerRefs.value) return;
 
@@ -68,10 +57,9 @@ function unmuteVideo(id: string) {
   });
 }
 
-const playCount = ref(0);
 function playAll() {
   if (!playerRefs.value) return;
-  playCount.value++;
+
   playerRefs.value.forEach((playerRef) => {
     const player = playerRef.player;
     if (!player) return;
@@ -97,15 +85,6 @@ function muteAll() {
   });
 }
 
-function moveIndex(from: number, to: number) {
-  let list = vidList.value.slice();
-  const item = list[from];
-  list = list.filter((_, index) => index !== from);
-  list = [...list.slice(0, to), item, ...list.slice(to)];
-
-  updateQuery(list);
-}
-
 function queryValueToArray(queryValue: LocationQueryValue | LocationQueryValue[]): string[] {
   if (queryValue == null) return [];
   if (Array.isArray(queryValue)) {
@@ -114,15 +93,29 @@ function queryValueToArray(queryValue: LocationQueryValue | LocationQueryValue[]
   return [queryValue];
 }
 
-watch(
-  () => route.query.v,
-  (queryV) => {
-    const list = queryValueToArray(queryV);
+function getAreaIndex(vid: string) {
+  return vidOrder.value.indexOf(vid);
+}
 
-    vidList.value = list.length > 0 ? list : sampleList;
-  },
-  { immediate: true },
-);
+// watch(
+//   () => route.query.v,
+//   (queryV) => {
+//     const list = queryValueToArray(queryV);
+
+//     vidList.value = list.length > 0 ? list : sampleList;
+
+//     vidOrder.value = vidList.value.slice();
+//   },
+//   { immediate: true },
+// );
+
+onMounted(() => {
+  const list = queryValueToArray(route.query.v);
+
+  vidList.value = list.length > 0 ? list : sampleList;
+
+  vidOrder.value = vidList.value.slice();
+});
 
 function updateQuery(urls: string[]) {
   router.push({
@@ -143,65 +136,54 @@ function onUrlsSubmit(e: Event) {
   urlInput.value = "";
 
   const vids = urls.flatMap((url) => getYouTubeVideoId(url) ?? []);
-  const mergedList = [...vidList.value, ...vids];
-
-  updateQuery(mergedList);
+  addVideo(vids);
 }
 
-const gridStyle = computed(() => {
-  const layout = gridLayout.value;
-  if (!layout) return {};
+function moveIndex(from: number, to: number) {
+  let list = vidOrder.value.slice();
+  const item = list[from];
+  list = list.filter((_, index) => index !== from);
+  list = [...list.slice(0, to), item, ...list.slice(to)];
 
-  console.log("layout", layout.spanList);
+  vidOrder.value = list;
+  updateQuery(list);
+}
 
-  // const [firstRowArea, ...restRowArea] = templateAreas.value;
+function removeVideo(id: string) {
+  vidList.value = vidList.value.filter((vid) => vid !== id);
+  vidOrder.value = vidOrder.value.filter((vid) => vid !== id);
+  updateQuery(vidOrder.value);
+}
 
-  // const gridTemplateList = [`${firstRowArea} ${layout.gridTemplateFirstRow}`];
-  // restRowArea.forEach((area) => {
-  //   gridTemplateList.push(`${area} 1fr`);
-  // });
-
-  // const gridTemplate = `${gridTemplateList.join(" ")} / ${layout.gridTemplateColumns}`;
-
-  const template1 = `'c0 c0 c0' 587.75px
-     'c1 c2 c3' 1fr
-     'c4 c5 .' 1fr / 1fr 1fr 1fr`;
-  const template2 = `'c2 c2 c2' 587.75px
-     'c0 c1 c3' 1fr
-     'c4 c5 .' 1fr / 1fr 1fr 1fr`;
-
-  return playCount.value % 2 === 0 ? { gridTemplate: template1 } : { gridTemplate: template2 };
-
-  // return {
-  //   // gridTemplateColumns: "repeat(3, 1fr)",
-  //   gridTemplate: `'c0 c0 c0' 587.75px
-  //    'c1 c2 c3' 1fr
-  //    'c4 c5 .' 1fr / 1fr 1fr 1fr`,
-
-  //   // gridTemplateAreas: gridTemplateAreas.value,
-
-  //   // "header header header" 2fr
-  //   //     "sidebar content content" 1fr
-  //   //     "footer footer footer" 1fr / 1fr 2fr 1fr;
-  // };
-});
+function addVideo(idList: string[]) {
+  const mergedList = [...vidList.value, ...idList];
+  vidList.value = mergedList;
+  vidOrder.value = [...vidOrder.value, ...idList];
+  updateQuery(vidOrder.value);
+}
 </script>
 
 <template>
   <main
     class="group relative flex h-screen w-screen items-center justify-center bg-gradient-to-b from-zinc-900 to-zinc-800"
   >
-    <div v-if="gridLayout" class="grid size-full" :style="gridStyle">
+    <div
+      v-if="gridLayout"
+      class="grid size-full"
+      :style="{
+        gridTemplate: gridLayout.gridTemplate,
+      }"
+    >
       <div
-        v-for="(vid, i) in vidList"
+        v-for="vid in vidList"
         :key="vid"
         class="_cell relative flex items-center justify-center overflow-hidden bg-zinc-900 shadow-[inset_10px_10px_50px_rgb(0_0_0_/_0.5)]"
-        :style="`grid-area: c${i}`"
+        :style="`grid-area: a${getAreaIndex(vid)}`"
       >
         <div class="_inner relative aspect-video">
           <YoutubePlayer
             :video-id="vid"
-            :index="i"
+            :index="getAreaIndex(vid)"
             :count="contentCount"
             ref="playerRefs"
             @remove="removeVideo"
@@ -290,7 +272,6 @@ const gridStyle = computed(() => {
   container-type: size;
 }
 ._inner {
-  aspect-ratio: 16 / 9;
   width: 100%;
   height: auto;
 }
