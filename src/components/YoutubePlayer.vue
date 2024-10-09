@@ -35,9 +35,11 @@ const volumeStyle = computed(() => {
   if (isMuted.value || volume.value === 0) return null;
 
   // volumeに応じて色を変える
-  const level = (volume.value + 50) / 150;
+  const min = 128;
+  const max = 255;
+  const color = Math.round(((max - min) * volume.value) / 100 + min);
   return {
-    outlineColor: `rgb(255 0 0 / ${level})`,
+    outlineColor: `rgb(${color} 0 0)`,
   };
 });
 
