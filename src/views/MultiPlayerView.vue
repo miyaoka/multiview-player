@@ -32,16 +32,6 @@ const gridLayout = computed<GridLayout | undefined>(() => {
   return topLayout?.layout;
 });
 
-// 現在の動画リストをURLクエリに反映
-function updateQuery(urls: string[]) {
-  router.push({
-    query: {
-      ...route.query,
-      v: urls,
-    },
-  });
-}
-
 // クエリから動画IDを取得
 function queryValueToArray(queryValue: LocationQueryValue | LocationQueryValue[]): string[] {
   if (queryValue == null) return [];
