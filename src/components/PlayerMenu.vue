@@ -75,7 +75,7 @@ const isFocused = computed(() => {
         </button>
         <button
           :disabled="!hasNext"
-          class=":disabled:opacity-20 grid size-10 place-items-center rounded-full hover:bg-gray-200"
+          class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
           @click="moveIndex(1)"
         >
           <i class="i-mdi-chevron-down size-8" />
