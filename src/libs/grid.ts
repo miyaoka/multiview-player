@@ -15,9 +15,7 @@ export interface GridLayout {
     min: number;
     max: number;
   };
-  // contentAreaTotal: number;
-  cellList: GridCell[];
-  gridStyle: Record<string, string>;
+  gridTemplate: string;
 }
 
 // 指定したカウントで必要な縦横セル数の組み合わせを列挙
@@ -54,6 +52,9 @@ export function calculateAreaInCell(
   };
 }
 
+function repeat(str: string, count: number): string[] {
+  return Array.from({ length: count }, () => str);
+}
 export function calculateGridLayout({
   containerWidth,
   containerHeight,
@@ -87,9 +88,6 @@ export function calculateGridLayout({
 
   // cellの高さ
   const cellHeight = containerHeight / rows;
-
-  let contentAreaTotal = 0;
-  const cellList: GridCell[] = [];
 
   // 1列目の最大height
   const firstRowCellWidth = containerWidth / firstRowColumnCount;
@@ -127,44 +125,44 @@ export function calculateGridLayout({
     : secondRowCellWidth / contentAspectRatio;
   const secondRowContentArea = secondRowContentHeight * secondRowContentHeight * contentAspectRatio;
 
+  const firstRowSpan = spanCount / firstRowColumnCount;
+  const secondRowSpan = spanCount / secondRowColumnCount;
   // 各cellのspan数と横長フラグを計算
-  for (let cellIndex = 0; cellIndex < contentCount; cellIndex++) {
-    const isFirstRow = cellIndex < firstRowColumnCount;
-    // cellに割り当てるspan数
-    const span = spanCount / (isFirstRow ? firstRowColumnCount : secondRowColumnCount);
-    const isHorizontal = isFirstRow ? firstRowCellIsHorizontal : secondRowCellIsHorizontal;
-    const contentArea = isFirstRow ? firstRowContentArea : secondRowContentArea;
-
-    cellList.push({
-      span,
-      isHorizontal,
-    });
-
-    contentAreaTotal += contentArea;
-  }
+  let contentAreaTotal = 0;
+  const spanList: string[] = [];
 
   // コンテンツ以外の余白を計算
   const rowSpace =
     containerHeight - (firstRowContentHeight + secondRowContentHeight * secondRowCount);
 
-  // グリッドテンプレート列を設定
-  const gridStyle = {
-    gridTemplateColumns: `repeat(${spanCount}, 1fr)`, // horizontal列
-    gridTemplateRows:
-      secondRowCount > 0
-        ? `${firstRowHeight + rowSpace / rows}px ${Array.from({ length: secondRowCount }, () => "1fr").join(" ")}`
-        : "1fr", // vertical行
-  };
+  const gridFirstRowHeight = secondRowCount > 0 ? `${firstRowHeight + rowSpace / rows}px` : "1fr";
+
+  for (let row = 0; row < rows; row++) {
+    if (row === 0) {
+      const span = Array.from({ length: firstRowColumnCount }, (_, index) => {
+        return repeat(`a${index}`, firstRowSpan).join(" ");
+      }).join(" ");
+      spanList.push(`"${span}" ${gridFirstRowHeight}`);
+
+      contentAreaTotal += firstRowContentArea;
+      continue;
+    }
+    const baseIndex = (row - 1) * secondRowColumnCount + firstRowColumnCount;
+    const span = Array.from({ length: secondRowColumnCount }, (_, index) => {
+      return repeat(`a${baseIndex + index}`, secondRowSpan).join(" ");
+    }).join(" ");
+    spanList.push(`"${span}" 1fr`);
+    contentAreaTotal += secondRowContentArea;
+  }
 
   return {
     id,
-    cellList,
     contentArea: {
       total: contentAreaTotal,
       min: secondRowContentArea,
       max: firstRowContentArea,
     },
-    gridStyle,
+    gridTemplate: spanList.join("\n"),
   };
 }
 
@@ -179,24 +177,24 @@ function getLCM(a: number, b: number): number {
 }
 
 // 候補の中から最適なレイアウトを選択
-export function selectOptimalLayout({
-  gridDimensionList,
+export function sortOptimalLayout({
   containerWidth,
   containerHeight,
   contentCount,
-  contentAspectRatio,
+  contentAspectRatio = 16 / 9,
 }: {
-  gridDimensionList: GridDimensions[];
   containerWidth: number;
   containerHeight: number;
   contentCount: number;
-  contentAspectRatio: number;
+  contentAspectRatio?: number;
 }): {
   minAreaDeviation: number;
   totalAreaDeviation: number;
   minAndtotalAreaDeviation: number;
   layout: GridLayout;
 }[] {
+  const gridDimensionList = enumerateGridDimensions({ count: contentCount });
+
   const result = gridDimensionList.map((gridDimension) => {
     return calculateGridLayout({
       containerWidth,

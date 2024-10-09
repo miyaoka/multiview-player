@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useWindowSize } from "@vueuse/core";
-import { computed, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter, type LocationQueryValue } from "vue-router";
 import type YoutubePlayerComponent from "@/components/YoutubePlayer.vue";
 import YoutubePlayer from "@/components/YoutubePlayer.vue";
-import { enumerateGridDimensions, selectOptimalLayout, type GridLayout } from "@/libs/grid";
+import { sortOptimalLayout, type GridLayout } from "@/libs/grid";
 import { getYouTubeVideoId } from "@/libs/youtube";
 
 const route = useRoute();
@@ -20,40 +20,59 @@ const sampleList: string[] = [
   // "_osdlijHr6U",
 ];
 
-const contentAspectRatio = 16 / 9;
-const vidList = ref<string[]>([]);
+// v-forでレンダリングする用の動画IDリスト
+// 並び替えすると表示リセットされてしまうので追加削除のみ行う
+const vIdList = ref<string[]>([]);
+// gridでの表示順
+const vIdGridOrder = ref<string[]>([]);
+
 const playerRefs = ref<InstanceType<typeof YoutubePlayerComponent>[] | null>([]);
 const urlInput = ref("");
 
-const contentCount = computed(() => vidList.value.length);
+const contentCount = computed(() => vIdList.value.length);
 
+// 動画の数に応じた最適なレイアウトを算出
 const gridLayout = computed<GridLayout | undefined>(() => {
-  const gridDimensionList = enumerateGridDimensions({ count: vidList.value.length });
-
-  const list = selectOptimalLayout({
-    gridDimensionList,
+  const list = sortOptimalLayout({
     containerWidth: windowWidth.value,
     containerHeight: windowHeight.value,
-    contentCount: vidList.value.length,
-    contentAspectRatio,
+    contentCount: contentCount.value,
   });
   const topLayout = list[0];
   return topLayout?.layout;
 });
 
-const cellList = computed(() => {
-  if (!gridLayout.value) return [];
-  return gridLayout.value.cellList.map((cell, i) => {
-    return {
-      ...cell,
-      videoId: vidList.value[i],
-    };
+// 全再生
+function playAll() {
+  if (!playerRefs.value) return;
+  playerRefs.value.forEach((playerRef) => {
+    const player = playerRef.player;
+    if (!player) return;
+    player.playVideo();
   });
-});
-
-function removeVideo(id: string) {
-  vidList.value = vidList.value.filter((vid) => vid !== id);
 }
+
+// 全停止
+function pauseAll() {
+  if (!playerRefs.value) return;
+  playerRefs.value.forEach((playerRef) => {
+    const player = playerRef.player;
+    if (!player) return;
+    player.pauseVideo();
+  });
+}
+
+// 全ミュート
+function muteAll() {
+  if (!playerRefs.value) return;
+  playerRefs.value.forEach((playerRef) => {
+    const player = playerRef.player;
+    if (!player) return;
+    player.mute();
+  });
+}
+
+// 指定IDの動画のみミュート解除し他はミュート
 function unmuteVideo(id: string) {
   if (!playerRefs.value) return;
 
@@ -67,42 +86,8 @@ function unmuteVideo(id: string) {
     player.mute();
   });
 }
-function playAll() {
-  if (!playerRefs.value) return;
-  playerRefs.value.forEach((playerRef) => {
-    const player = playerRef.player;
-    if (!player) return;
-    player.playVideo();
-  });
-}
 
-function pauseAll() {
-  if (!playerRefs.value) return;
-  playerRefs.value.forEach((playerRef) => {
-    const player = playerRef.player;
-    if (!player) return;
-    player.pauseVideo();
-  });
-}
-
-function muteAll() {
-  if (!playerRefs.value) return;
-  playerRefs.value.forEach((playerRef) => {
-    const player = playerRef.player;
-    if (!player) return;
-    player.mute();
-  });
-}
-
-function moveIndex(from: number, to: number) {
-  let list = vidList.value.slice();
-  const item = list[from];
-  list = list.filter((_, index) => index !== from);
-  list = [...list.slice(0, to), item, ...list.slice(to)];
-
-  updateQuery(list);
-}
-
+// クエリから動画IDを取得
 function queryValueToArray(queryValue: LocationQueryValue | LocationQueryValue[]): string[] {
   if (queryValue == null) return [];
   if (Array.isArray(queryValue)) {
@@ -111,16 +96,56 @@ function queryValueToArray(queryValue: LocationQueryValue | LocationQueryValue[]
   return [queryValue];
 }
 
-watch(
-  () => route.query.v,
-  (queryV) => {
-    const list = queryValueToArray(queryV);
+// 動画追加フォームのハンドリング
+function onUrlsSubmit(e: Event) {
+  e.preventDefault();
+  const urls = urlInput.value
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
 
-    vidList.value = list.length > 0 ? list : sampleList;
-  },
-  { immediate: true },
-);
+  // 入力クリア
+  urlInput.value = "";
 
+  const vids = urls.flatMap((url) => getYouTubeVideoId(url) ?? []);
+  if (vids.length === 0) return;
+  addVideo(vids);
+}
+
+// 動画リストを追加
+function addVideo(idList: string[]) {
+  const mergedList = [...vIdList.value, ...idList];
+  vIdList.value = mergedList;
+  vIdGridOrder.value = [...vIdGridOrder.value, ...idList];
+}
+// 動画リストから削除
+function removeVideo(id: string) {
+  vIdList.value = vIdList.value.filter((vid) => vid !== id);
+  vIdGridOrder.value = vIdGridOrder.value.filter((vid) => vid !== id);
+}
+// 動画リストの順番を変更
+function moveIndex(from: number, to: number) {
+  let list = vIdGridOrder.value.slice();
+  const item = list[from];
+  list = list.filter((_, index) => index !== from);
+  list = [...list.slice(0, to), item, ...list.slice(to)];
+
+  vIdGridOrder.value = list;
+}
+
+// 動画IDからリスト内のインデックスを取得
+function getAreaIndex(vid: string) {
+  return vIdGridOrder.value.indexOf(vid);
+}
+
+// 現在の動画リストをURLに変換してクリップボードにコピー
+function shareUrl() {
+  const url = new URL(location.href);
+  url.search = new URLSearchParams(vIdGridOrder.value.map((vid) => ["v", vid])).toString();
+  navigator.clipboard.writeText(url.href);
+}
+
+// 現在の動画リストをURLクエリに反映
 function updateQuery(urls: string[]) {
   router.push({
     query: {
@@ -130,20 +155,13 @@ function updateQuery(urls: string[]) {
   });
 }
 
-function onUrlsSubmit(e: Event) {
-  e.preventDefault();
-  const urls = urlInput.value
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
+// mount時にURLクエリから動画IDを取得
+onMounted(() => {
+  const list = queryValueToArray(route.query.v);
 
-  urlInput.value = "";
-
-  const vids = urls.flatMap((url) => getYouTubeVideoId(url) ?? []);
-  const mergedList = [...vidList.value, ...vids];
-
-  updateQuery(mergedList);
-}
+  vIdList.value = list.length > 0 ? list : sampleList;
+  vIdGridOrder.value = vIdList.value.slice();
+});
 </script>
 
 <template>
@@ -154,21 +172,19 @@ function onUrlsSubmit(e: Event) {
       v-if="gridLayout"
       class="grid size-full"
       :style="{
-        ...gridLayout.gridStyle,
+        gridTemplate: gridLayout.gridTemplate,
       }"
     >
       <div
-        v-for="(cell, i) in cellList"
-        :key="cell.videoId"
-        class="relative flex items-center justify-center overflow-hidden bg-zinc-900 shadow-[inset_10px_10px_50px_rgb(0_0_0_/_0.5)]"
-        :style="{
-          gridColumn: `span ${cell.span}`,
-        }"
+        v-for="vid in vIdList"
+        :key="vid"
+        class="_cell relative flex items-center justify-center overflow-hidden bg-zinc-900 shadow-[inset_10px_10px_50px_rgb(0_0_0_/_0.5)]"
+        :style="`grid-area: a${getAreaIndex(vid)}`"
       >
-        <div :class="`relative aspect-video ${cell.isHorizontal ? 'h-full' : 'w-full'}`">
+        <div class="_inner relative aspect-video">
           <YoutubePlayer
-            :video-id="cell.videoId"
-            :index="i"
+            :video-id="vid"
+            :index="getAreaIndex(vid)"
             :count="contentCount"
             ref="playerRefs"
             @remove="removeVideo"
@@ -251,3 +267,20 @@ function onUrlsSubmit(e: Event) {
     </div>
   </main>
 </template>
+
+<style scoped>
+._cell {
+  container-type: size;
+}
+._inner {
+  width: 100%;
+  height: auto;
+}
+
+@container (aspect-ratio > 16/9) {
+  ._inner {
+    width: auto;
+    height: 100%;
+  }
+}
+</style>
