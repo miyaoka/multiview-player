@@ -86,6 +86,12 @@ const isFocused = computed(() => {
       >
         <i :class="`${isMuted ? 'i-mdi-volume-off' : 'i-mdi-volume-high'} size-8`" />
       </button>
+    </div>
+
+    <div
+      v-if="isFocused"
+      class="absolute right-4 flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline"
+    >
       <button
         class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
         @click="remove"
