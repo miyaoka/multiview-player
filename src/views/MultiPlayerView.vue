@@ -12,11 +12,11 @@ const router = useRouter();
 const { width: windowWidth, height: windowHeight } = useWindowSize();
 
 const sampleList: string[] = [
-  "-w_wHBUVOe4",
-  "cM_Gcwx-itQ",
-  "gum19GF7sxg",
-  "CMJwr1nDmnc",
-  "h6-BNWk0GE4",
+  // "-w_wHBUVOe4",
+  // "cM_Gcwx-itQ",
+  // "gum19GF7sxg",
+  // "CMJwr1nDmnc",
+  // "h6-BNWk0GE4",
   // "_osdlijHr6U",
 ];
 
