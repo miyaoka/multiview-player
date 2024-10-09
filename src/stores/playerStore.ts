@@ -4,6 +4,12 @@ import type { YouTubePlayer } from "youtube-player/dist/types";
 
 export const usePlayerStore = defineStore("playerStore", () => {
   const playerMap = ref<Map<string, YouTubePlayer>>(new Map());
+  // シーク時に全動画を一緒に動かすかどうか
+  const isSyncSeek = ref(false);
+
+  function toggleSyncSeek() {
+    isSyncSeek.value = !isSyncSeek.value;
+  }
 
   // プレイヤーを追加
   function addPlayer(videoId: string, player: YouTubePlayer) {
@@ -44,13 +50,23 @@ export const usePlayerStore = defineStore("playerStore", () => {
       player.mute();
     });
   }
+  function seekOffsetAll(offset: number) {
+    playerMap.value.forEach((player) => {
+      player.getCurrentTime().then((time) => {
+        player.seekTo(time + offset, true);
+      });
+    });
+  }
   return {
     playerMap,
+    isSyncSeek,
+    toggleSyncSeek,
     addPlayer,
     removePlayer,
     playAll,
     pauseAll,
     muteAll,
     unmuteVideo,
+    seekOffsetAll,
   };
 });
