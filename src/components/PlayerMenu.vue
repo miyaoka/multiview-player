@@ -74,7 +74,7 @@ function remove() {
   >
     <template v-if="isMenuVisible">
       <div
-        class="flex size-fit flex-row items-center justify-center rounded-full bg-white px-4 shadow-md outline"
+        class="relative flex size-fit flex-row items-center justify-center rounded-full bg-white px-4 shadow-md outline"
       >
         <button
           :disabled="!hasPrev"
@@ -96,17 +96,17 @@ function remove() {
         >
           <i :class="`${isMuted ? 'i-mdi-volume-off' : 'i-mdi-volume-high'} size-8`" />
         </button>
-      </div>
 
-      <div
-        class="absolute right-4 flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline"
-      >
-        <button
-          class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
-          @click="remove"
+        <div
+          class="absolute left-full ml-4 flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline"
         >
-          <i class="i-mdi-trash-can-outline size-8" />
-        </button>
+          <button
+            class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
+            @click="remove"
+          >
+            <i class="i-mdi-trash-can-outline size-8" />
+          </button>
+        </div>
       </div>
     </template>
   </div>
