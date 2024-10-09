@@ -4,6 +4,12 @@ import type { YouTubePlayer } from "youtube-player/dist/types";
 
 export const usePlayerStore = defineStore("playerStore", () => {
   const playerMap = ref<Map<string, YouTubePlayer>>(new Map());
+  // シーク時に全動画を一緒に動かすかどうか
+  const isSyncSeek = ref(false);
+
+  function toggleSyncSeek() {
+    isSyncSeek.value = !isSyncSeek.value;
+  }
 
   // プレイヤーを追加
   function addPlayer(videoId: string, player: YouTubePlayer) {
@@ -46,6 +52,8 @@ export const usePlayerStore = defineStore("playerStore", () => {
   }
   return {
     playerMap,
+    isSyncSeek,
+    toggleSyncSeek,
     addPlayer,
     removePlayer,
     playAll,
