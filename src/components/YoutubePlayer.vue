@@ -2,6 +2,8 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import YoutubePlayerFactory from "youtube-player";
 import { type YouTubePlayer } from "youtube-player/dist/types";
+import PlayerMenu from "./PlayerMenu.vue";
+import { usePlayerStore } from "@/stores/playerStore";
 
 const eventsMap = new Map([
   [-1, "unstarted"],
@@ -15,18 +17,12 @@ const eventsMap = new Map([
 const props = defineProps<{
   videoId: string;
   index: number;
-  count: number;
 }>();
 
-const emit = defineEmits<{
-  remove: [videoId: string];
-  unmute: [videoId: string];
-  moveIndex: [from: number, to: number];
-}>();
+const playerStore = usePlayerStore();
 
 const elementId = ref(`youtube-player-${props.videoId}`);
 const player = ref<YouTubePlayer | null>(null);
-
 const isMuted = ref(true);
 const isPaused = ref(true);
 const volume = ref(0);
@@ -35,9 +31,11 @@ const volumeStyle = computed(() => {
   if (isMuted.value || volume.value === 0) return null;
 
   // volumeに応じて色を変える
-  const level = (volume.value + 50) / 150;
+  const min = 128;
+  const max = 255;
+  const color = Math.round(((max - min) * volume.value) / 100 + min);
   return {
-    outlineColor: `rgb(255 0 0 / ${level})`,
+    outlineColor: `rgb(${color} 0 0)`,
   };
 });
 
@@ -66,18 +64,6 @@ function onPlayerStateChange(
   }
 }
 
-function toggleMute() {
-  // if (isMuted.value) {
-  emit("unmute", props.videoId);
-  //   return;
-  // }
-  // player.value?.mute();
-}
-
-function moveIndex(diff: number) {
-  emit("moveIndex", props.index, props.index + diff);
-}
-
 onMounted(async () => {
   const ytPlayer = YoutubePlayerFactory(elementId.value, {
     videoId: props.videoId,
@@ -95,55 +81,23 @@ onMounted(async () => {
   ytPlayer.on("volumeChange", onVolumeChange);
 
   player.value = ytPlayer;
+  playerStore.addPlayer(props.videoId, ytPlayer);
 });
 
 onBeforeUnmount(() => {
   if (!player.value) return;
+  playerStore.removePlayer(props.videoId);
   player.value.destroy();
   player.value = null;
-});
-
-defineExpose({
-  videoId: props.videoId,
-  player,
 });
 </script>
 
 <template>
   <div
-    class="group/player flex size-full items-center justify-center outline outline-4 -outline-offset-4 outline-transparent"
+    class="flex size-full items-center justify-center outline outline-4 -outline-offset-4 outline-transparent"
     :style="volumeStyle"
   >
-    <div
-      class="absolute top-4 z-10 flex flex-row items-center justify-center rounded-full bg-white px-4 opacity-0 shadow-md outline group-hover/player:opacity-100"
-    >
-      <button
-        :disabled="props.index === 0"
-        class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
-        @click="moveIndex(-1)"
-      >
-        <i class="i-mdi-chevron-up size-8" />
-      </button>
-      <button
-        :disabled="props.index === props.count - 1"
-        class=":disabled:opacity-20 grid size-10 place-items-center rounded-full hover:bg-gray-200"
-        @click="moveIndex(1)"
-      >
-        <i class="i-mdi-chevron-down size-8" />
-      </button>
-      <button
-        class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
-        @click="toggleMute"
-      >
-        <i :class="`${isMuted ? 'i-mdi-volume-off' : 'i-mdi-volume-high'} size-8`" />
-      </button>
-      <button
-        class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
-        @click="emit('remove', props.videoId)"
-      >
-        <i class="i-mdi-cross-circle size-8" />
-      </button>
-    </div>
     <div :id="elementId" />
+    <PlayerMenu :videoId="videoId" :index="index" :isMuted="isMuted" />
   </div>
 </template>
