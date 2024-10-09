@@ -6,6 +6,8 @@ export const useVideoListStore = defineStore("videoListStore", () => {
   const router = useRouter();
   const route = useRoute();
 
+  const draggingVideoId = ref<string | null>(null);
+
   // v-forでレンダリングする用の動画IDリスト
   // 並び替えすると表示リセットされてしまうので追加削除のみ行う
   const videoIdList = ref<string[]>([]);
@@ -58,6 +60,12 @@ export const useVideoListStore = defineStore("videoListStore", () => {
     if (toIndex < 0 || toIndex >= videoIdGridOrder.value.length) return;
     moveVideoIndex(index, toIndex);
   }
+  function moveVideoIndexById(fromId: string, toId: string) {
+    const fromIndex = getAreaIndex(fromId);
+    const toIndex = getAreaIndex(toId);
+    if (fromIndex === -1 || toIndex === -1) return;
+    moveVideoIndex(fromIndex, toIndex);
+  }
 
   // 現在の動画リストをURLに変換してクリップボードにコピー
   function shareUrl() {
@@ -73,6 +81,7 @@ export const useVideoListStore = defineStore("videoListStore", () => {
     return videoIdGridOrder.value.indexOf(videoId);
   }
   return {
+    draggingVideoId,
     videoIdList,
     videoIdGridOrder,
     contentCount,
@@ -81,6 +90,7 @@ export const useVideoListStore = defineStore("videoListStore", () => {
     removeVideo,
     moveVideoIndex,
     moveVideoRelativeIndex,
+    moveVideoIndexById,
     shareUrl,
     getAreaIndex,
   };

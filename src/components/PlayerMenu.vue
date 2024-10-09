@@ -63,6 +63,13 @@ function moveIndex(offset: number) {
 function remove() {
   videoListStore.removeVideo(props.videoId);
 }
+
+function onDragstart(e: DragEvent) {
+  videoListStore.draggingVideoId = props.videoId;
+}
+function onDragend(e: DragEvent) {
+  videoListStore.draggingVideoId = null;
+}
 </script>
 
 <template>
@@ -77,9 +84,20 @@ function remove() {
         class="relative flex size-fit flex-row items-center justify-center rounded-full bg-white px-4 shadow-md outline"
       >
         <button
+          class="grid size-10 cursor-grab touch-none place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
+          title="Drag to move"
+          draggable="true"
+          @dragstart="onDragstart"
+          @dragend="onDragend"
+        >
+          <i class="i-mdi-drag size-8" />
+        </button>
+
+        <button
           :disabled="!hasPrev"
           class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
           @click="moveIndex(-1)"
+          title="Move to prev"
         >
           <i class="i-mdi-chevron-up size-8" />
         </button>
@@ -87,12 +105,14 @@ function remove() {
           :disabled="!hasNext"
           class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
           @click="moveIndex(1)"
+          title="Move to next"
         >
           <i class="i-mdi-chevron-down size-8" />
         </button>
         <button
           class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
           @click="unmute"
+          title="Unmute"
         >
           <i :class="`${isMuted ? 'i-mdi-volume-off' : 'i-mdi-volume-high'} size-8`" />
         </button>
@@ -103,6 +123,7 @@ function remove() {
           <button
             class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
             @click="remove"
+            title="Remove"
           >
             <i class="i-mdi-trash-can-outline size-8" />
           </button>
