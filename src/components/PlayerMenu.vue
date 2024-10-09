@@ -84,7 +84,7 @@ function onDragend(e: DragEvent) {
         class="relative flex size-fit flex-row items-center justify-center rounded-full bg-white px-4 shadow-md outline"
       >
         <button
-          class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
+          class="grid size-10 cursor-grab touch-none place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
           title="Drag to move"
           draggable="true"
           @dragstart="onDragstart"
