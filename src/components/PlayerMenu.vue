@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useEventListener } from "@vueuse/core";
 import { computed, ref } from "vue";
 import { usePlayerStore } from "@/stores/playerStore";
 import { useVideoListStore } from "@/stores/videoListStore";
@@ -13,8 +12,34 @@ const props = defineProps<{
 const playerStore = usePlayerStore();
 const videoListStore = useVideoListStore();
 
+// timeoutの返り値を格納する変数
+let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
+const isHovered = ref(false);
+const isClicked = ref(false);
+
+// メニューが表示されるかどうか
+const isMenuVisible = computed(() => isHovered.value || isClicked.value);
 const hasNext = computed(() => props.index < videoListStore.videoIdList.length - 1);
 const hasPrev = computed(() => props.index > 0);
+
+// マウスではホバーでメニューを開く
+function onMouseenter() {
+  isHovered.value = true;
+}
+function onMouseleave() {
+  isHovered.value = false;
+}
+// モバイルはタッチでメニューを開き、一定時間で閉じる
+function onClick(evt: MouseEvent) {
+  // 既にフォーカスされている場合はスキップ
+  if (isMenuVisible.value) return;
+
+  clearTimeout(timeoutId);
+  isClicked.value = true;
+  timeoutId = setTimeout(() => {
+    isClicked.value = false;
+  }, 5000);
+}
 
 function unmute() {
   playerStore.unmuteVideo(props.videoId);
@@ -27,42 +52,16 @@ function moveIndex(offset: number) {
 function remove() {
   videoListStore.removeVideo(props.videoId);
 }
-
-const rootEl = ref<HTMLElement | null>(null);
-const isHovered = ref(false);
-const isClicked = ref(false);
-// timeoutの返り値を格納する変数
-let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
-
-// マウスではホバーで開く
-useEventListener(rootEl, "mouseenter", () => {
-  isHovered.value = true;
-});
-useEventListener(rootEl, "mouseleave", () => {
-  isHovered.value = false;
-});
-
-// モバイルはタッチで開き、一定時間で閉じる
-useEventListener(rootEl, "click", () => {
-  if (isHovered.value) return;
-  clearTimeout(timeoutId);
-  isClicked.value = true;
-  timeoutId = setTimeout(() => {
-    isClicked.value = false;
-  }, 5000);
-});
-
-const isFocused = computed(() => {
-  return isHovered.value || isClicked.value;
-});
 </script>
 
 <template>
   <div
     class="absolute -inset-0 bottom-auto z-10 flex h-16 items-center justify-center"
-    ref="rootEl"
+    @mouseenter="onMouseenter"
+    @mouseleave="onMouseleave"
+    @click.prevent="onClick"
   >
-    <template v-if="isFocused">
+    <template v-if="isMenuVisible">
       <div
         class="flex size-fit flex-row items-center justify-center rounded-full bg-white px-4 shadow-md outline"
       >
