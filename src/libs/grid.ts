@@ -144,7 +144,7 @@ export function calculateGridLayout({
       }).join(" ");
       spanList.push(`"${span}" ${gridFirstRowHeight}`);
 
-      contentAreaTotal += firstRowContentArea;
+      contentAreaTotal += firstRowContentArea * firstRowColumnCount;
       continue;
     }
     const baseIndex = (row - 1) * secondRowColumnCount + firstRowColumnCount;
@@ -152,7 +152,7 @@ export function calculateGridLayout({
       return repeat(`a${baseIndex + index}`, secondRowSpan).join(" ");
     }).join(" ");
     spanList.push(`"${span}" 1fr`);
-    contentAreaTotal += secondRowContentArea;
+    contentAreaTotal += secondRowContentArea * secondRowColumnCount;
   }
 
   return {
