@@ -12,33 +12,44 @@ const props = defineProps<{
 const playerStore = usePlayerStore();
 const videoListStore = useVideoListStore();
 
-// timeoutの返り値を格納する変数
-let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
-const isHovered = ref(false);
-const isClicked = ref(false);
-
 // メニューが表示されるかどうか
-const isMenuVisible = computed(() => isHovered.value || isClicked.value);
+const isMenuVisible = ref(false);
+// メニューを自動で閉じるまでの時間
+const menuCloseTimeout = 3000;
+
 const hasNext = computed(() => props.index < videoListStore.videoIdList.length - 1);
 const hasPrev = computed(() => props.index > 0);
 
-// マウスではホバーでメニューを開く
-function onMouseenter() {
-  isHovered.value = true;
-}
-function onMouseleave() {
-  isHovered.value = false;
-}
-// モバイルはタッチでメニューを開き、一定時間で閉じる
-function onClick(evt: MouseEvent) {
-  // 既にフォーカスされている場合はスキップ
-  if (isMenuVisible.value) return;
+let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
 
+// 一定時間後にメニューを閉じる
+function setMenuTimeout() {
   clearTimeout(timeoutId);
-  isClicked.value = true;
   timeoutId = setTimeout(() => {
-    isClicked.value = false;
-  }, 5000);
+    isMenuVisible.value = false;
+  }, menuCloseTimeout);
+}
+
+// ホバーでメニューを開く
+// タッチデバイスではクリック後
+function onMouseenter() {
+  // クリック時に直接メニューないのボタンが押されないように遅らせる
+  requestAnimationFrame(() => {
+    isMenuVisible.value = true;
+    setMenuTimeout();
+  });
+}
+// move時にタイマーをセットし直す
+function onMousemove() {
+  // offなら再度enterし直すまでメニューを開かない
+  if (!isMenuVisible.value) return;
+
+  setMenuTimeout();
+}
+// leave時にメニューを閉じる
+// タッチデバイスでは別の要素をクリック時
+function onMouseleave() {
+  isMenuVisible.value = false;
 }
 
 function unmute() {
@@ -58,8 +69,8 @@ function remove() {
   <div
     class="absolute -inset-0 bottom-auto z-10 flex h-16 items-center justify-center"
     @mouseenter="onMouseenter"
+    @mousemove="onMousemove"
     @mouseleave="onMouseleave"
-    @click.prevent="onClick"
   >
     <template v-if="isMenuVisible">
       <div
