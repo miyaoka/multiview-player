@@ -62,42 +62,42 @@ const isFocused = computed(() => {
     class="absolute -inset-0 bottom-auto z-10 flex h-16 items-center justify-center"
     ref="rootEl"
   >
-    <div
-      v-if="isFocused"
-      class="flex size-fit flex-row items-center justify-center rounded-full bg-white px-4 shadow-md outline"
-    >
-      <button
-        :disabled="!hasPrev"
-        class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
-        @click="moveIndex(-1)"
+    <template v-if="isFocused">
+      <div
+        class="flex size-fit flex-row items-center justify-center rounded-full bg-white px-4 shadow-md outline"
       >
-        <i class="i-mdi-chevron-up size-8" />
-      </button>
-      <button
-        :disabled="!hasNext"
-        class=":disabled:opacity-20 grid size-10 place-items-center rounded-full hover:bg-gray-200"
-        @click="moveIndex(1)"
-      >
-        <i class="i-mdi-chevron-down size-8" />
-      </button>
-      <button
-        class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
-        @click="unmute"
-      >
-        <i :class="`${isMuted ? 'i-mdi-volume-off' : 'i-mdi-volume-high'} size-8`" />
-      </button>
-    </div>
+        <button
+          :disabled="!hasPrev"
+          class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
+          @click="moveIndex(-1)"
+        >
+          <i class="i-mdi-chevron-up size-8" />
+        </button>
+        <button
+          :disabled="!hasNext"
+          class=":disabled:opacity-20 grid size-10 place-items-center rounded-full hover:bg-gray-200"
+          @click="moveIndex(1)"
+        >
+          <i class="i-mdi-chevron-down size-8" />
+        </button>
+        <button
+          class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
+          @click="unmute"
+        >
+          <i :class="`${isMuted ? 'i-mdi-volume-off' : 'i-mdi-volume-high'} size-8`" />
+        </button>
+      </div>
 
-    <div
-      v-if="isFocused"
-      class="absolute right-4 flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline"
-    >
-      <button
-        class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
-        @click="remove"
+      <div
+        class="absolute right-4 flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline"
       >
-        <i class="i-mdi-trash-can-outline size-8" />
-      </button>
-    </div>
+        <button
+          class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
+          @click="remove"
+        >
+          <i class="i-mdi-trash-can-outline size-8" />
+        </button>
+      </div>
+    </template>
   </div>
 </template>
