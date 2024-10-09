@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import { useWindowSize } from "@vueuse/core";
 import { computed, onMounted } from "vue";
-import { useRoute, useRouter, type LocationQueryValue } from "vue-router";
+import { useRoute, type LocationQueryValue } from "vue-router";
 import GlobalMenu from "@/components/GlobalMenu.vue";
 import GridArea from "@/components/GridArea.vue";
 import { sortOptimalLayout, type GridLayout } from "@/libs/grid";
 import { useVideoListStore } from "@/stores/videoListStore";
 
 const route = useRoute();
-const router = useRouter();
 const { width: windowWidth, height: windowHeight } = useWindowSize();
 const videoListStore = useVideoListStore();
 
@@ -51,7 +50,7 @@ onMounted(() => {
 
 <template>
   <main
-    class="group relative flex h-screen w-screen items-center justify-center bg-gradient-to-b from-zinc-900 to-zinc-800"
+    class="relative flex h-screen w-screen items-center justify-center bg-gradient-to-b from-zinc-900 to-zinc-800"
   >
     <div
       v-if="gridLayout"
