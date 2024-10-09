@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { enumerateGridDimensions, selectOptimalLayout, type GridLayout } from "@/libs/grid";
+import { sortOptimalLayout, type GridLayout } from "@/libs/grid";
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
@@ -11,8 +11,6 @@ const containerHeight = ref(300);
 const contentCount = ref(5);
 const contentAspectRatio = ref(16 / 9);
 
-const gridDimensionList = computed(() => enumerateGridDimensions({ count: contentCount.value }));
-
 const gridLayoutList = computed<
   {
     minAreaDeviation: number;
@@ -21,8 +19,7 @@ const gridLayoutList = computed<
     layout: GridLayout;
   }[]
 >(() => {
-  return selectOptimalLayout({
-    gridDimensionList: gridDimensionList.value,
+  return sortOptimalLayout({
     containerWidth: containerWidth.value,
     containerHeight: containerHeight.value,
     contentCount: contentCount.value,

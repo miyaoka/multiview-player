@@ -15,9 +15,6 @@ export interface GridLayout {
     min: number;
     max: number;
   };
-  // spanList: number[];
-  // gridSpanCount: number;
-  // gridFirstRowHeight: string;
   gridTemplate: string;
 }
 
@@ -158,7 +155,6 @@ export function calculateGridLayout({
     contentAreaTotal += secondRowContentArea;
   }
 
-  console.log("spanList", id, spanList.join(" "));
   return {
     id,
     contentArea: {
@@ -166,7 +162,7 @@ export function calculateGridLayout({
       min: secondRowContentArea,
       max: firstRowContentArea,
     },
-    gridTemplate: spanList.join(" "),
+    gridTemplate: spanList.join("\n"),
   };
 }
 
@@ -181,24 +177,24 @@ function getLCM(a: number, b: number): number {
 }
 
 // 候補の中から最適なレイアウトを選択
-export function selectOptimalLayout({
-  gridDimensionList,
+export function sortOptimalLayout({
   containerWidth,
   containerHeight,
   contentCount,
-  contentAspectRatio,
+  contentAspectRatio = 16 / 9,
 }: {
-  gridDimensionList: GridDimensions[];
   containerWidth: number;
   containerHeight: number;
   contentCount: number;
-  contentAspectRatio: number;
+  contentAspectRatio?: number;
 }): {
   minAreaDeviation: number;
   totalAreaDeviation: number;
   minAndtotalAreaDeviation: number;
   layout: GridLayout;
 }[] {
+  const gridDimensionList = enumerateGridDimensions({ count: contentCount });
+
   const result = gridDimensionList.map((gridDimension) => {
     return calculateGridLayout({
       containerWidth,
