@@ -7,10 +7,13 @@ const props = defineProps<{
   videoId: string;
   index: number;
   isMuted: boolean;
+  isLive: boolean;
 }>();
 
 const playerStore = usePlayerStore();
 const videoListStore = useVideoListStore();
+
+const showChat = ref(false);
 
 // メニューが表示されるかどうか
 const isMenuVisible = ref(false);
@@ -21,6 +24,13 @@ const hasNext = computed(() => props.index < videoListStore.videoIdList.length -
 const hasPrev = computed(() => props.index > 0);
 
 let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
+
+const chatUrl = computed(() => {
+  const url = new URL("https://www.youtube.com/live_chat");
+  url.searchParams.set("v", props.videoId);
+  url.searchParams.set("embed_domain", location.hostname);
+  return url.toString();
+});
 
 // 一定時間後にメニューを閉じる
 function setMenuTimeout() {
@@ -70,6 +80,9 @@ function onDragstart(e: DragEvent) {
 function onDragend(e: DragEvent) {
   videoListStore.draggingVideoId = null;
 }
+function toggleChat() {
+  showChat.value = !showChat.value;
+}
 </script>
 
 <template>
@@ -91,6 +104,21 @@ function onDragend(e: DragEvent) {
           @dragend="onDragend"
         >
           <i class="i-mdi-drag size-8" />
+        </button>
+
+        <button
+          v-if="isLive"
+          class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
+          title="Toggle chat"
+          @click="toggleChat"
+        >
+          <i
+            class="size-8"
+            :class="{
+              'i-f7-ellipses-bubble': !showChat,
+              'i-f7-ellipses-bubble-fill': showChat,
+            }"
+          />
         </button>
 
         <button
@@ -130,5 +158,9 @@ function onDragend(e: DragEvent) {
         </div>
       </div>
     </template>
+  </div>
+
+  <div class="absolute right-0 top-0 h-full">
+    <iframe class="size-full" :src="chatUrl" v-if="showChat" />
   </div>
 </template>
