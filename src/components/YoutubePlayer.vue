@@ -1,18 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import YoutubePlayerFactory from "youtube-player";
-import { type YouTubePlayer } from "youtube-player/dist/types";
 import PlayerMenu from "./PlayerMenu.vue";
 import { usePlayerStore } from "@/stores/playerStore";
-
-const eventsMap = new Map([
-  [-1, "unstarted"],
-  [0, "ended"],
-  [1, "playing"],
-  [2, "paused"],
-  [3, "buffering"],
-  [5, "cued"],
-]);
 
 const props = defineProps<{
   videoId: string;
@@ -21,8 +10,8 @@ const props = defineProps<{
 
 const playerStore = usePlayerStore();
 
-const elementId = ref(`youtube-player-${props.videoId}`);
-const player = ref<YouTubePlayer | null>(null);
+const playerEl = ref<HTMLElement | null>(null);
+const player = ref<YT.Player | null>(null);
 const isMuted = ref(true);
 const isPaused = ref(true);
 const volume = ref(0);
@@ -39,33 +28,30 @@ const volumeStyle = computed(() => {
   };
 });
 
-function onPlayerReady(e: CustomEvent) {
-  const evt = e as CustomEvent & { target: YouTubePlayer };
+function onReady(evt: YT.PlayerEvent) {
   evt.target.mute();
 }
 
-function onVolumeChange(e: CustomEvent) {
-  const data = (e as CustomEvent & { data: { volume: number; muted: boolean } }).data;
-
+function onVolumeChange(evt: YT.OnVolumeChangeEvent) {
+  const data = evt.data;
   volume.value = data.volume;
   isMuted.value = data.muted;
 }
 
-function onPlayerStateChange(
-  e: CustomEvent<any> & {
-    data: number;
-  },
-) {
-  const event = eventsMap.get(e.data);
-  if (event === "playing") {
-    isPaused.value = false;
-  } else if (event === "paused") {
-    isPaused.value = true;
+function onStateChange(evt: YT.OnStateChangeEvent) {
+  switch (evt.data) {
+    case YT.PlayerState.PLAYING:
+      isPaused.value = false;
+      break;
+    case YT.PlayerState.PAUSED:
+      isPaused.value = true;
+      break;
   }
 }
 
 onMounted(async () => {
-  const ytPlayer = YoutubePlayerFactory(elementId.value, {
+  if (!playerEl.value) return;
+  const ytPlayer = new YT.Player(playerEl.value, {
     videoId: props.videoId,
     width: "100%",
     height: "100%",
@@ -75,10 +61,12 @@ onMounted(async () => {
       rel: 0,
       enablejsapi: 1,
     },
+    events: {
+      onReady: onReady,
+      onStateChange: onStateChange,
+      onVolumeChange,
+    },
   });
-  ytPlayer.on("ready", onPlayerReady);
-  ytPlayer.on("stateChange", onPlayerStateChange);
-  ytPlayer.on("volumeChange", onVolumeChange);
 
   player.value = ytPlayer;
   playerStore.addPlayer(props.videoId, ytPlayer);
@@ -97,7 +85,7 @@ onBeforeUnmount(() => {
     class="flex size-full items-center justify-center outline outline-4 -outline-offset-4 outline-transparent"
     :style="volumeStyle"
   >
-    <div :id="elementId" />
+    <div ref="playerEl" />
     <PlayerMenu :videoId="videoId" :index="index" :isMuted="isMuted" />
   </div>
 </template>

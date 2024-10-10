@@ -1,9 +1,8 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
-import type { YouTubePlayer } from "youtube-player/dist/types";
 
 export const usePlayerStore = defineStore("playerStore", () => {
-  const playerMap = ref<Map<string, YouTubePlayer>>(new Map());
+  const playerMap = ref<Map<string, YT.Player>>(new Map());
   // シーク時に全動画を一緒に動かすかどうか
   const isSyncSeek = ref(false);
 
@@ -12,7 +11,7 @@ export const usePlayerStore = defineStore("playerStore", () => {
   }
 
   // プレイヤーを追加
-  function addPlayer(videoId: string, player: YouTubePlayer) {
+  function addPlayer(videoId: string, player: YT.Player) {
     playerMap.value.set(videoId, player);
   }
   // プレイヤーを削除
@@ -52,9 +51,8 @@ export const usePlayerStore = defineStore("playerStore", () => {
   }
   function seekOffsetAll(offset: number) {
     playerMap.value.forEach((player) => {
-      player.getCurrentTime().then((time) => {
-        player.seekTo(time + offset, true);
-      });
+      const time = player.getCurrentTime();
+      player.seekTo(time + offset, true);
     });
   }
   return {
