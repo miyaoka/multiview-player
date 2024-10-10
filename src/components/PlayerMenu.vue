@@ -13,8 +13,6 @@ const props = defineProps<{
 const playerStore = usePlayerStore();
 const videoListStore = useVideoListStore();
 
-const showChat = ref(false);
-
 // メニューが表示されるかどうか
 const isMenuVisible = ref(false);
 // メニューを自動で閉じるまでの時間
@@ -25,12 +23,8 @@ const hasPrev = computed(() => props.index > 0);
 
 let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
 
-const chatUrl = computed(() => {
-  const url = new URL("https://www.youtube.com/live_chat");
-  url.searchParams.set("v", props.videoId);
-  url.searchParams.set("embed_domain", location.hostname);
-  return url.toString();
-});
+const videoOptions = computed(() => videoListStore.videoOptionsMap.get(props.videoId));
+const showChat = computed(() => videoOptions.value?.showChat);
 
 // 一定時間後にメニューを閉じる
 function setMenuTimeout() {
@@ -84,8 +78,10 @@ function onDragstart(e: DragEvent) {
 function onDragend(e: DragEvent) {
   videoListStore.draggingVideoId = null;
 }
+
 function toggleChat() {
-  showChat.value = !showChat.value;
+  const showChat = videoOptions.value?.showChat;
+  videoListStore.setVideoOptions(props.videoId, { showChat: !showChat });
 }
 </script>
 
@@ -162,9 +158,5 @@ function toggleChat() {
         </div>
       </div>
     </template>
-  </div>
-
-  <div class="absolute right-0 top-0 h-full">
-    <iframe class="size-full" :src="chatUrl" v-if="showChat" />
   </div>
 </template>

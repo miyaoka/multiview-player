@@ -8,8 +8,17 @@ const props = defineProps<{
 }>();
 
 const videoListStore = useVideoListStore();
-const areaIndex = computed(() => videoListStore.getAreaIndex(props.videoId));
+
 const isDragover = ref(false);
+
+const areaIndex = computed(() => videoListStore.getAreaIndex(props.videoId));
+const chatUrl = computed(() => {
+  const url = new URL("https://www.youtube.com/live_chat");
+  url.searchParams.set("v", props.videoId);
+  url.searchParams.set("embed_domain", location.hostname);
+  return url.toString();
+});
+const showChat = computed(() => videoListStore.videoOptionsMap.get(props.videoId)?.showChat);
 
 function ondragenter() {
   isDragover.value = true;
@@ -37,6 +46,9 @@ function ondrop() {
   >
     <div class="_inner relative aspect-video">
       <YoutubePlayer :videoId="videoId" :index="areaIndex" ref="playerRefs" />
+    </div>
+    <div class="absolute right-0 top-0 h-full">
+      <iframe class="size-full" :src="chatUrl" v-if="showChat" />
     </div>
     <div
       v-if="videoListStore.draggingVideoId && videoListStore.draggingVideoId !== videoId"
