@@ -47,8 +47,11 @@ function ondrop() {
     <div class="_inner relative aspect-video">
       <YoutubePlayer :videoId="videoId" :index="areaIndex" ref="playerRefs" />
     </div>
-    <div class="absolute right-0 top-0 h-full">
-      <iframe class="size-full" :src="chatUrl" v-if="showChat" />
+    <div
+      v-if="showChat"
+      class="absolute bottom-[-86px] right-[-80px] top-[-90px] w-[300px] overflow-hidden opacity-80"
+    >
+      <iframe class="absolute left-[-55px] size-full" :src="chatUrl" />
     </div>
     <div
       v-if="videoListStore.draggingVideoId && videoListStore.draggingVideoId !== videoId"
