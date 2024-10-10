@@ -62,8 +62,12 @@ function onMouseleave() {
   isMenuVisible.value = false;
 }
 
-function unmute() {
-  playerStore.unmuteVideo(props.videoId);
+function toggleMute() {
+  if (props.isMuted) {
+    playerStore.unmuteVideo(props.videoId);
+  } else {
+    playerStore.muteAll();
+  }
 }
 
 function moveIndex(offset: number) {
@@ -139,8 +143,8 @@ function toggleChat() {
         </button>
         <button
           class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
-          @click="unmute"
-          title="Unmute"
+          @click="toggleMute"
+          title="Toggle mute"
         >
           <i :class="`${isMuted ? 'i-mdi-volume-off' : 'i-mdi-volume-high'} size-8`" />
         </button>
