@@ -7,6 +7,7 @@ const props = defineProps<{
   videoId: string;
   index: number;
   isMuted: boolean;
+  isLive: boolean;
 }>();
 
 const playerStore = usePlayerStore();
@@ -21,6 +22,9 @@ const hasNext = computed(() => props.index < videoListStore.videoIdList.length -
 const hasPrev = computed(() => props.index > 0);
 
 let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
+
+const videoOptions = computed(() => videoListStore.videoOptionsMap.get(props.videoId));
+const showChat = computed(() => videoOptions.value?.showChat);
 
 // 一定時間後にメニューを閉じる
 function setMenuTimeout() {
@@ -52,8 +56,12 @@ function onMouseleave() {
   isMenuVisible.value = false;
 }
 
-function unmute() {
-  playerStore.unmuteVideo(props.videoId);
+function toggleMute() {
+  if (props.isMuted) {
+    playerStore.unmuteVideo(props.videoId);
+  } else {
+    playerStore.muteAll();
+  }
 }
 
 function moveIndex(offset: number) {
@@ -69,6 +77,11 @@ function onDragstart(e: DragEvent) {
 }
 function onDragend(e: DragEvent) {
   videoListStore.draggingVideoId = null;
+}
+
+function toggleChat() {
+  const showChat = videoOptions.value?.showChat;
+  videoListStore.setVideoOptions(props.videoId, { showChat: !showChat });
 }
 </script>
 
@@ -94,6 +107,21 @@ function onDragend(e: DragEvent) {
         </button>
 
         <button
+          v-if="isLive"
+          class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
+          title="Toggle chat"
+          @click="toggleChat"
+        >
+          <i
+            class="size-8"
+            :class="{
+              'i-f7-ellipses-bubble': !showChat,
+              'i-f7-ellipses-bubble-fill': showChat,
+            }"
+          />
+        </button>
+
+        <button
           :disabled="!hasPrev"
           class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
           @click="moveIndex(-1)"
@@ -111,8 +139,8 @@ function onDragend(e: DragEvent) {
         </button>
         <button
           class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
-          @click="unmute"
-          title="Unmute"
+          @click="toggleMute"
+          title="Toggle mute"
         >
           <i :class="`${isMuted ? 'i-mdi-volume-off' : 'i-mdi-volume-high'} size-8`" />
         </button>

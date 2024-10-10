@@ -28,8 +28,14 @@ const volumeStyle = computed(() => {
   };
 });
 
+const isLive = ref(false);
+
 function onReady(evt: YT.PlayerEvent) {
-  evt.target.mute();
+  const player = evt.target;
+
+  // 動画の長さが0の場合はライブ配信
+  const duration = player.getDuration();
+  isLive.value = duration === 0;
 }
 
 function onVolumeChange(evt: YT.OnVolumeChangeEvent) {
@@ -60,6 +66,7 @@ onMounted(async () => {
       modestbranding: 1,
       rel: 0,
       enablejsapi: 1,
+      mute: 1,
     },
     events: {
       onReady: onReady,
@@ -86,6 +93,6 @@ onBeforeUnmount(() => {
     :style="volumeStyle"
   >
     <div ref="playerEl" />
-    <PlayerMenu :videoId="videoId" :index="index" :isMuted="isMuted" />
+    <PlayerMenu :videoId="videoId" :index="index" :isMuted="isMuted" :isLive="isLive" />
   </div>
 </template>
