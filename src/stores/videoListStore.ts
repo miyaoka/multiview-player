@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
+import { getYouTubeVideoId } from "@/libs/youtube";
 
 interface VideoOptions {
   showChat: boolean;
@@ -36,6 +37,22 @@ export const useVideoListStore = defineStore("videoListStore", () => {
         v: videoIdGridOrder.value,
       },
     });
+  }
+
+  // 入力テキストから動画を追加
+  function addVideoByText(text: string) {
+    // スペース区切りで分割
+    const urls = text
+      .split(/\s+/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    // id部分を取り出し
+    const vids = urls.flatMap((url) => getYouTubeVideoId(url) ?? []);
+    if (vids.length === 0) return;
+
+    // 動画リストに追加
+    addVideoList(vids);
   }
   // 動画リストを追加
   function addVideoList(idList: string[]) {
@@ -109,6 +126,7 @@ export const useVideoListStore = defineStore("videoListStore", () => {
     videoIdGridOrder,
     contentCount,
     setVideoList,
+    addVideoByText,
     addVideoList,
     removeVideo,
     moveVideoIndex,

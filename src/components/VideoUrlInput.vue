@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { getYouTubeVideoId } from "@/libs/youtube";
 import { useVideoListStore } from "@/stores/videoListStore";
 
 const videoListStore = useVideoListStore();
@@ -13,17 +12,12 @@ const emit = defineEmits<{
 // 動画追加フォームのハンドリング
 function onUrlsSubmit(e: Event) {
   e.preventDefault();
-  const urls = urlInputTextarea.value
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0);
 
+  // テキストエリアから動画追加
+  videoListStore.addVideoByText(urlInputTextarea.value);
   // 入力クリア
   urlInputTextarea.value = "";
 
-  const vids = urls.flatMap((url) => getYouTubeVideoId(url) ?? []);
-  if (vids.length === 0) return;
-  videoListStore.addVideoList(vids);
   emit("submit");
 }
 </script>
