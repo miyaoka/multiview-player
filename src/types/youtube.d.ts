@@ -1,5 +1,6 @@
 declare namespace YT {
   interface Events {
+    // ドキュメントにないが実装が存在するイベントを追加
     onVolumeChange?: PlayerEventHandler<OnVolumeChangeEvent> | undefined;
   }
   interface OnVolumeChangeEvent extends PlayerEvent {
@@ -13,5 +14,6 @@ declare namespace YT {
 }
 
 interface Window {
-  onYouTubeIframeAPIReady?: () => void; // YouTube API がロードされたときに呼ばれるコールバック
+  // YouTube Iframe API がロードされたときに呼ばれるコールバック
+  onYouTubeIframeAPIReady?: () => void;
 }
