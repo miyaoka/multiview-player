@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { useWindowSize } from "@vueuse/core";
 import { computed, onMounted } from "vue";
-import { useRoute, type LocationQueryValue } from "vue-router";
+import { useRoute, useRouter, type LocationQueryValue } from "vue-router";
 import GlobalMenu from "@/components/GlobalMenu.vue";
-import GridArea from "@/components/GridArea.vue";
+import VideoGrid from "@/components/VideoGrid.vue";
 import { sortOptimalLayout, type GridLayout } from "@/libs/grid";
 import { useVideoListStore } from "@/stores/videoListStore";
 
 const route = useRoute();
+const router = useRouter();
 const { width: windowWidth, height: windowHeight } = useWindowSize();
 const videoListStore = useVideoListStore();
 
@@ -44,6 +45,18 @@ function queryValueToArray(queryValue: LocationQueryValue | LocationQueryValue[]
 onMounted(() => {
   const list = queryValueToArray(route.query.v);
 
+  // ユニークなidだけにする
+  const uniqueList = Array.from(new Set(list));
+  // 変化があればquery更新
+  if (list.length !== uniqueList.length) {
+    router.replace({
+      query: {
+        ...route.query,
+        v: uniqueList,
+      },
+    });
+  }
+  // storeにセット
   videoListStore.setVideoList(list.length > 0 ? list : sampleList);
 });
 </script>
@@ -52,15 +65,7 @@ onMounted(() => {
   <main
     class="relative flex h-screen w-screen items-center justify-center bg-gradient-to-b from-zinc-900 to-zinc-800"
   >
-    <div
-      v-if="gridLayout"
-      class="grid size-full"
-      :style="{
-        gridTemplate: gridLayout.gridTemplate,
-      }"
-    >
-      <GridArea v-for="videoId in videoListStore.videoIdList" :key="videoId" :videoId="videoId" />
-    </div>
+    <VideoGrid v-if="gridLayout" :gridLayout="gridLayout" />
     <div v-else class="rounded-3xl bg-white p-8">
       <p class="text-xl">右上のメニューからYouTubeの動画URLを入力してください</p>
     </div>

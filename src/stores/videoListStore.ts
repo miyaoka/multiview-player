@@ -39,9 +39,12 @@ export const useVideoListStore = defineStore("videoListStore", () => {
   }
   // 動画リストを追加
   function addVideoList(idList: string[]) {
-    const mergedList = [...videoIdList.value, ...idList];
+    // ユニークな動画IDのみ追加
+    const uniqueIdList = idList.filter((id) => !videoIdList.value.includes(id));
+
+    const mergedList = [...videoIdList.value, ...uniqueIdList];
     videoIdList.value = mergedList;
-    videoIdGridOrder.value = [...videoIdGridOrder.value, ...idList];
+    videoIdGridOrder.value = [...videoIdGridOrder.value, ...uniqueIdList];
     updateQuery();
   }
   // 動画リストから削除

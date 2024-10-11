@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import PlayerMenu from "./PlayerMenu.vue";
 import { useYouTubeIframeAPI } from "@/composables/useYouTubeIframeApi";
 import { usePlayerStore } from "@/stores/playerStore";
+import { useVideoListStore } from "@/stores/videoListStore";
 
 const props = defineProps<{
   videoId: string;
@@ -10,6 +11,7 @@ const props = defineProps<{
 }>();
 
 const playerStore = usePlayerStore();
+const videoListStore = useVideoListStore();
 const youTubeIframeAPI = useYouTubeIframeAPI();
 
 const playerEl = ref<HTMLElement | null>(null);
@@ -18,7 +20,11 @@ const isMuted = ref(true);
 const isPaused = ref(true);
 const volume = ref(0);
 
+// 音声ONの動画に色をつける
 const volumeStyle = computed(() => {
+  // 動画が1つだけなら表示しない
+  if (videoListStore.videoIdList.length < 2) return null;
+  // 無音の場合は表示しない
   if (isMuted.value || volume.value === 0) return null;
 
   // volumeに応じて色を変える
