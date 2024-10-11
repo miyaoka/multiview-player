@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { useWindowSize } from "@vueuse/core";
 import { computed, onMounted } from "vue";
-import { useRoute, type LocationQueryValue } from "vue-router";
+import { useRoute, useRouter, type LocationQueryValue } from "vue-router";
 import GlobalMenu from "@/components/GlobalMenu.vue";
 import VideoGrid from "@/components/VideoGrid.vue";
 import { sortOptimalLayout, type GridLayout } from "@/libs/grid";
 import { useVideoListStore } from "@/stores/videoListStore";
 
 const route = useRoute();
+const router = useRouter();
 const { width: windowWidth, height: windowHeight } = useWindowSize();
 const videoListStore = useVideoListStore();
 
@@ -44,6 +45,18 @@ function queryValueToArray(queryValue: LocationQueryValue | LocationQueryValue[]
 onMounted(() => {
   const list = queryValueToArray(route.query.v);
 
+  // ユニークなidだけにする
+  const uniqueList = Array.from(new Set(list));
+  // 変化があればquery更新
+  if (list.length !== uniqueList.length) {
+    router.replace({
+      query: {
+        ...route.query,
+        v: uniqueList,
+      },
+    });
+  }
+  // storeにセット
   videoListStore.setVideoList(list.length > 0 ? list : sampleList);
 });
 </script>
