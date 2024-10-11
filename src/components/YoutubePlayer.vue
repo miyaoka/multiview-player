@@ -59,7 +59,6 @@ function onStateChange(evt: YT.OnStateChangeEvent) {
 
 onMounted(async () => {
   if (!playerEl.value) return;
-  console.log("onMounted");
   await youTubeIframeAPI.onReady;
 
   const ytPlayer = new YT.Player(playerEl.value, {
