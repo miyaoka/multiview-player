@@ -57,6 +57,8 @@ function onStateChange(evt: YT.OnStateChangeEvent) {
 
 onMounted(async () => {
   if (!playerEl.value) return;
+  await playerStore.onIframeApiReady();
+
   const ytPlayer = new YT.Player(playerEl.value, {
     videoId: props.videoId,
     width: "100%",
