@@ -3,27 +3,6 @@ import { ref } from "vue";
 
 export const usePlayerStore = defineStore("playerStore", () => {
   const playerMap = ref<Map<string, YT.Player>>(new Map());
-  const isIframeApiLoaded = ref(false);
-
-  // YouTubeIframeAPIが読み込まれているか
-  function onIframeApiReady(): Promise<void> {
-    // 読み込みフラグ済み
-    if (isIframeApiLoaded.value) return Promise.resolve();
-
-    return new Promise<void>((resolve) => {
-      // YTオブジェクトが存在するか確認
-      if (typeof YT !== "undefined" && YT && YT.Player) {
-        isIframeApiLoaded.value = true;
-        resolve();
-        return;
-      }
-      // YTオブジェクトが無ければscript読み込みを待つ
-      window.onYouTubeIframeAPIReady = () => {
-        isIframeApiLoaded.value = true;
-        resolve();
-      };
-    });
-  }
 
   // シーク時に全動画を一緒に動かすかどうか
   const isSyncSeek = ref(false);
@@ -80,7 +59,6 @@ export const usePlayerStore = defineStore("playerStore", () => {
   return {
     playerMap,
     isSyncSeek,
-    onIframeApiReady,
     toggleSyncSeek,
     addPlayer,
     removePlayer,

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import PlayerMenu from "./PlayerMenu.vue";
+import { useYouTubeIframeAPI } from "@/composables/useYouTubeIframeApi";
 import { usePlayerStore } from "@/stores/playerStore";
 
 const props = defineProps<{
@@ -9,6 +10,7 @@ const props = defineProps<{
 }>();
 
 const playerStore = usePlayerStore();
+const youTubeIframeAPI = useYouTubeIframeAPI();
 
 const playerEl = ref<HTMLElement | null>(null);
 const player = ref<YT.Player | null>(null);
@@ -57,7 +59,8 @@ function onStateChange(evt: YT.OnStateChangeEvent) {
 
 onMounted(async () => {
   if (!playerEl.value) return;
-  await playerStore.onIframeApiReady();
+  console.log("onMounted");
+  await youTubeIframeAPI.onReady;
 
   const ytPlayer = new YT.Player(playerEl.value, {
     videoId: props.videoId,
