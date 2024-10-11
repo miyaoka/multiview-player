@@ -13,8 +13,10 @@ const emit = defineEmits<{
 // 動画追加フォームのハンドリング
 function onUrlsSubmit(e: Event) {
   e.preventDefault();
+
+  // スペース区切りで分割
   const urls = urlInputTextarea.value
-    .split("\n")
+    .split(/\s+/)
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
 
