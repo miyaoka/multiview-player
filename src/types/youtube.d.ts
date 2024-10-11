@@ -11,3 +11,7 @@ declare namespace YT {
     volume: number;
   }
 }
+
+interface Window {
+  onYouTubeIframeAPIReady?: () => void; // YouTube API がロードされたときに呼ばれるコールバック
+}
