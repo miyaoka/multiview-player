@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useWindowSize } from "@vueuse/core";
+import { useEventListener, useWindowSize } from "@vueuse/core";
 import { computed, onMounted } from "vue";
 import { useRoute, useRouter, type LocationQueryValue } from "vue-router";
 import GlobalMenu from "@/components/GlobalMenu.vue";
@@ -59,6 +59,17 @@ onMounted(() => {
   // storeにセット
   videoListStore.setVideoList(list.length > 0 ? list : sampleList);
 });
+
+// ペーストされた文字列から動画を追加
+useEventListener("paste", (evt: ClipboardEvent) => {
+  // 入力要素でペーストされた場合は処理せずreturn
+  if (evt.target instanceof HTMLInputElement || evt.target instanceof HTMLTextAreaElement) return;
+
+  const text = evt.clipboardData?.getData("text");
+  if (text == null) return;
+
+  videoListStore.addVideoByText(text);
+});
 </script>
 
 <template>
@@ -66,8 +77,8 @@ onMounted(() => {
     class="relative flex h-screen w-screen items-center justify-center bg-gradient-to-b from-zinc-900 to-zinc-800"
   >
     <VideoGrid v-if="gridLayout" :gridLayout="gridLayout" />
-    <div v-else class="rounded-3xl bg-white p-8">
-      <p class="text-xl">右上のメニューからYouTubeの動画URLを入力してください</p>
+    <div v-else class="m-4 rounded-3xl bg-white p-8">
+      <p class="text-lg">YouTubeの動画URLをペースト、または右上のメニューから追加してください</p>
     </div>
 
     <GlobalMenu />
