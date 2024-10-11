@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { isTouchDevice, supportsDragAndDrop } from "@/libs/device";
 import { usePlayerStore } from "@/stores/playerStore";
 import { useVideoListStore } from "@/stores/videoListStore";
 
@@ -25,6 +26,9 @@ let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
 
 const videoOptions = computed(() => videoListStore.videoOptionsMap.get(props.videoId));
 const showChat = computed(() => videoOptions.value?.showChat);
+
+// DnDが使えるかどうかでメニューを切り替える
+const canUseDragAndDrop = computed(() => !isTouchDevice() && supportsDragAndDrop());
 
 // 一定時間後にメニューを閉じる
 function setMenuTimeout() {
@@ -97,6 +101,7 @@ function toggleChat() {
         class="relative flex size-fit flex-row items-center justify-center rounded-full bg-white px-4 shadow-md outline"
       >
         <button
+          v-if="canUseDragAndDrop"
           class="grid size-10 cursor-grab touch-none place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
           title="Drag to move"
           draggable="true"
@@ -121,22 +126,25 @@ function toggleChat() {
           />
         </button>
 
-        <button
-          :disabled="!hasPrev"
-          class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
-          @click="moveIndex(-1)"
-          title="Move to prev"
-        >
-          <i class="i-mdi-chevron-up size-8" />
-        </button>
-        <button
-          :disabled="!hasNext"
-          class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
-          @click="moveIndex(1)"
-          title="Move to next"
-        >
-          <i class="i-mdi-chevron-down size-8" />
-        </button>
+        <template v-if="!canUseDragAndDrop">
+          <button
+            :disabled="!hasPrev"
+            class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
+            @click="moveIndex(-1)"
+            title="Move to prev"
+          >
+            <i class="i-mdi-chevron-up size-8" />
+          </button>
+          <button
+            :disabled="!hasNext"
+            class="grid size-10 place-items-center rounded-full hover:bg-gray-200 disabled:opacity-20"
+            @click="moveIndex(1)"
+            title="Move to next"
+          >
+            <i class="i-mdi-chevron-down size-8" />
+          </button>
+        </template>
+
         <button
           class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
           @click="toggleMute"
