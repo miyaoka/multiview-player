@@ -16,6 +16,7 @@ const chatUrl = computed(() => {
   const url = new URL("https://www.youtube.com/live_chat");
   url.searchParams.set("v", props.videoId);
   url.searchParams.set("embed_domain", location.hostname);
+  url.searchParams.set("dark_theme", "1");
   return url.toString();
 });
 const showChat = computed(() => videoListStore.videoOptionsMap.get(props.videoId)?.showChat);
