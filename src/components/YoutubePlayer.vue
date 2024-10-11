@@ -18,6 +18,7 @@ const playerEl = ref<HTMLElement | null>(null);
 const player = ref<YT.Player | null>(null);
 const isMuted = ref(true);
 const isPaused = ref(true);
+const isLive = ref(false);
 const volume = ref(0);
 
 // 音声ONの動画に色をつける
@@ -35,8 +36,6 @@ const volumeStyle = computed(() => {
     outlineColor: `rgb(${color} 0 0)`,
   };
 });
-
-const isLive = ref(false);
 
 function onReady(evt: YT.PlayerEvent) {
   const player = evt.target;
@@ -79,8 +78,8 @@ onMounted(async () => {
       mute: 1,
     },
     events: {
-      onReady: onReady,
-      onStateChange: onStateChange,
+      onReady,
+      onStateChange,
       onVolumeChange,
     },
   });
