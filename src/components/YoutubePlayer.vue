@@ -65,19 +65,22 @@ function onStateChange(evt: YT.OnStateChangeEvent) {
       isPaused.value = false;
       const time = evt.target.getCurrentTime();
       const offset = time - currentTime.value;
-
-      // 1秒以上ならシークと判定
-      if (Math.abs(offset) > 1) {
-        // 操作中の動画なら他もシーク
-        if (playerStore.activeVideoId === props.videoId) {
-          playerStore.seekOffsetAll(offset, props.videoId);
-        }
-      }
       currentTime.value = time;
       // プレイ中は再生位置を監視
       currentTimeIntervalId = setInterval(() => {
         currentTime.value = evt.target.getCurrentTime();
       }, 1000);
+
+      // 同期シーク中でなければ終了
+      if (!playerStore.isSyncSeek) break;
+      // 1秒以上でなければシークと判定しない
+      if (Math.abs(offset) < 1) break;
+      // 操作中の動画でなければ終了
+      if (playerStore.activeVideoId !== props.videoId) break;
+
+      // 他の動画もシークさせる
+      playerStore.seekOffsetAll(offset, props.videoId);
+
       break;
     }
     case YT.PlayerState.PAUSED: {

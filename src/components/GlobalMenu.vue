@@ -114,7 +114,7 @@ function onVideoUrlSubmit() {
           <p class="absolute bottom-0 text-xs font-bold">+10m</p>
         </button>
       </div>
-      <!-- <div class="flex items-center">
+      <div class="flex items-center">
         連結してシーク
         <button
           :disabled="!hasVideos"
@@ -130,7 +130,7 @@ function onVideoUrlSubmit() {
             {{ playerStore.isSyncSeek ? "ON" : "OFF" }}
           </p>
         </button>
-      </div> -->
+      </div>
       <div class="flex items-center">
         動画を追加
         <button
