@@ -20,6 +20,7 @@ const isMuted = ref(true);
 const isPaused = ref(true);
 const isLive = ref(false);
 const volume = ref(0);
+const currentTime = ref(0);
 
 // 音声ONの動画に色をつける
 const volumeStyle = computed(() => {
@@ -51,14 +52,68 @@ function onVolumeChange(evt: YT.OnVolumeChangeEvent) {
   isMuted.value = data.muted;
 }
 
+// 再生位置の監視用
+let currentTimeIntervalId: ReturnType<typeof setInterval> | undefined = undefined;
+
+// シーク中はpause状態になる。シークバーをクリックしたところでpauseし、離したところでplayingになる
+// 元々pause状態だったら何も起こらない
+// キー操作の場合puaseが発生しない
+// endedの状態からだとplaying->paused->buffering->playingの順になる
 function onStateChange(evt: YT.OnStateChangeEvent) {
   switch (evt.data) {
-    case YT.PlayerState.PLAYING:
+    case YT.PlayerState.PLAYING: {
       isPaused.value = false;
+      const time = evt.target.getCurrentTime();
+      const offset = time - currentTime.value;
+
+      // 1秒以上ならシークと判定
+      if (Math.abs(offset) > 1) {
+        // 操作中の動画なら他もシーク
+        if (playerStore.activeVideoId === props.videoId) {
+          playerStore.seekOffsetAll(offset, props.videoId);
+        }
+      }
+      currentTime.value = time;
+      // プレイ中は再生位置を監視
+      currentTimeIntervalId = setInterval(() => {
+        currentTime.value = evt.target.getCurrentTime();
+      }, 1000);
       break;
-    case YT.PlayerState.PAUSED:
+    }
+    case YT.PlayerState.PAUSED: {
+      // 再生位置の監視をを解除
+      clearInterval(currentTimeIntervalId);
+
       isPaused.value = true;
+      // const time = evt.target.getCurrentTime();
+      // console.log("paused at", time);
       break;
+    }
+    case YT.PlayerState.BUFFERING: {
+      // 再生位置の監視をを解除
+      clearInterval(currentTimeIntervalId);
+      // const time = evt.target.getCurrentTime();
+      // console.log("buffering", time);
+      break;
+    }
+
+    case YT.PlayerState.ENDED: {
+      isPaused.value = true;
+      clearInterval(currentTimeIntervalId);
+      // durationをcurrentTimeにセット
+      const time = evt.target.getDuration();
+      currentTime.value = time;
+      // console.log("ended", time);
+      break;
+    }
+    case YT.PlayerState.CUED: {
+      // console.log("cued");
+      break;
+    }
+    case YT.PlayerState.UNSTARTED: {
+      // console.log("unstarted");
+      break;
+    }
   }
 }
 
@@ -89,6 +144,8 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  clearInterval(currentTimeIntervalId);
+
   if (!player.value) return;
   playerStore.removePlayer(props.videoId);
   player.value.destroy();
@@ -100,8 +157,13 @@ onBeforeUnmount(() => {
   <div
     class="flex size-full items-center justify-center outline outline-4 -outline-offset-4 outline-transparent"
     :style="volumeStyle"
+    @pointerenter="playerStore.setActiveVideoId(videoId)"
+    @pointerleave="playerStore.setActiveVideoId(null)"
   >
     <div ref="playerEl" />
     <PlayerMenu :videoId="videoId" :index="index" :isMuted="isMuted" :isLive="isLive" />
+    <div class="absolute bottom-0 right-0 bg-black p-1 text-xs text-white">
+      {{ currentTime.toFixed(0) }}
+    </div>
   </div>
 </template>

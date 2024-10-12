@@ -6,6 +6,8 @@ export const usePlayerStore = defineStore("playerStore", () => {
 
   // シーク時に全動画を一緒に動かすかどうか
   const isSyncSeek = ref(false);
+  // ユーザーが操作中の動画のID
+  const activeVideoId = ref<string | null>(null);
 
   function toggleSyncSeek() {
     isSyncSeek.value = !isSyncSeek.value;
@@ -50,15 +52,24 @@ export const usePlayerStore = defineStore("playerStore", () => {
       player.mute();
     });
   }
-  function seekOffsetAll(offset: number) {
-    playerMap.value.forEach((player) => {
+  function seekOffsetAll(offset: number, ignoreId?: string) {
+    playerMap.value.forEach((player, videoId) => {
+      // ignoreIdが指定されている場合はそのIDはスキップ
+      if (ignoreId && videoId === ignoreId) {
+        return;
+      }
       const time = player.getCurrentTime();
       player.seekTo(time + offset, true);
     });
   }
+
+  function setActiveVideoId(id: string | null) {
+    activeVideoId.value = id;
+  }
   return {
     playerMap,
     isSyncSeek,
+    activeVideoId,
     toggleSyncSeek,
     addPlayer,
     removePlayer,
@@ -67,5 +78,6 @@ export const usePlayerStore = defineStore("playerStore", () => {
     muteAll,
     unmuteVideo,
     seekOffsetAll,
+    setActiveVideoId,
   };
 });
