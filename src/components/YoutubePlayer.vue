@@ -71,6 +71,8 @@ function onStateChange(evt: YT.OnStateChangeEvent) {
         currentTime.value = evt.target.getCurrentTime();
       }, 1000);
 
+      // ライブ中なら終了
+      if (isLive.value) break;
       // 同期シーク中でなければ終了
       if (!playerStore.isSyncSeek) break;
       // 1秒以上でなければシークと判定しない
