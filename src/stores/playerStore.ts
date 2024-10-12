@@ -55,9 +55,8 @@ export const usePlayerStore = defineStore("playerStore", () => {
   function seekOffsetAll(offset: number, ignoreId?: string) {
     playerMap.value.forEach((player, videoId) => {
       // ignoreIdが指定されている場合はそのIDはスキップ
-      if (ignoreId && videoId === ignoreId) {
-        return;
-      }
+      if (videoId === ignoreId) return;
+
       const time = player.getCurrentTime();
       player.seekTo(time + offset, true);
     });
