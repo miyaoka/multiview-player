@@ -165,8 +165,5 @@ onBeforeUnmount(() => {
   >
     <div ref="playerEl" />
     <PlayerMenu :videoId="videoId" :index="index" :isMuted="isMuted" :isLive="isLive" />
-    <div class="absolute bottom-0 right-0 bg-black p-1 text-xs text-white">
-      {{ currentTime.toFixed(0) }}
-    </div>
   </div>
 </template>
