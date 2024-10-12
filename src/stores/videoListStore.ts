@@ -1,3 +1,4 @@
+import { useLocalStorage } from "@vueuse/core";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -21,7 +22,7 @@ export const useVideoListStore = defineStore("videoListStore", () => {
   // 並び替えすると表示リセットされてしまうので追加削除のみ行う
   const videoIdList = ref<string[]>([]);
   // gridでの表示順
-  const videoIdGridOrder = ref<string[]>([]);
+  const videoIdGridOrder = useLocalStorage<string[]>("videoIdList", []);
   const contentCount = computed(() => videoIdList.value.length);
 
   function setVideoList(idList: string[]) {
