@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import YoutubeLiveChat from "./YoutubeLiveChat.vue";
 import YoutubePlayer from "./YoutubePlayer.vue";
 import { useVideoListStore } from "@/stores/videoListStore";
 
@@ -12,13 +13,7 @@ const videoListStore = useVideoListStore();
 const isDragover = ref(false);
 
 const areaIndex = computed(() => videoListStore.getAreaIndex(props.videoId));
-const chatUrl = computed(() => {
-  const url = new URL("https://www.youtube.com/live_chat");
-  url.searchParams.set("v", props.videoId);
-  url.searchParams.set("embed_domain", location.hostname);
-  url.searchParams.set("dark_theme", "1");
-  return url.toString();
-});
+
 const showChat = computed(() => videoListStore.videoOptionsMap.get(props.videoId)?.showChat);
 
 function ondragenter() {
@@ -48,12 +43,9 @@ function ondrop() {
     <div class="_inner relative aspect-video">
       <YoutubePlayer :videoId="videoId" :index="areaIndex" ref="playerRefs" />
     </div>
-    <div
-      v-if="showChat"
-      class="absolute bottom-[-86px] right-[-80px] top-[-90px] w-[300px] overflow-hidden opacity-80"
-    >
-      <iframe class="absolute left-[-55px] size-full" :src="chatUrl" />
-    </div>
+
+    <YoutubeLiveChat v-if="showChat" :videoId="videoId" />
+
     <div
       v-if="videoListStore.draggingVideoId && videoListStore.draggingVideoId !== videoId"
       class="absolute size-full"
