@@ -37,7 +37,7 @@ const clipStyle = {
 };
 
 // 左右どちらに配置するか
-const isRight = ref(true);
+const isRight = ref(false);
 
 const containerStyle = computed(() => {
   return {
