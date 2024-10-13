@@ -43,24 +43,21 @@ function queryValueToArray(queryValue: LocationQueryValue | LocationQueryValue[]
 
 // mount時にURLクエリから動画IDを取得
 onMounted(() => {
-  const queryList = queryValueToArray(route.query.v);
+  const list = queryValueToArray(route.query.v);
 
   // ユニークなidだけにする
-  const uniqueList = Array.from(new Set(queryList));
-  // 空ならストレージに保存されたリストを使う
-  const list = uniqueList.length > 0 ? uniqueList : videoListStore.videoIdGridOrder;
-
+  const uniqueList = Array.from(new Set(list));
   // 変化があればquery更新
-  if (queryList.length !== list.length) {
+  if (list.length !== uniqueList.length) {
     router.replace({
       query: {
         ...route.query,
-        v: list,
+        v: uniqueList,
       },
     });
   }
   // storeにセット
-  videoListStore.setVideoList(list);
+  videoListStore.setVideoList(list.length > 0 ? list : sampleList);
 });
 
 // ペーストされた文字列から動画を追加
