@@ -12,7 +12,7 @@ const tickerHeight = 40;
 // 固定メッセージの高さ
 const pinnedHeight = 56;
 // フッターの高さ
-const footerHeight = 52 + 2;
+const footerHeight = 88;
 // メッセージの左右padding
 const msgPaddingWidth = 24;
 // メッセージのauthorアイコン+margin幅
