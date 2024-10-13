@@ -62,21 +62,24 @@ function togglePosition() {
 
 <template>
   <div class="absolute top-0" :style="containerStyle">
-    <div class="absolute w-[300px] overflow-hidden opacity-80" :style="clipStyle">
-      <iframe class="absolute size-full" :src="chatUrl" />
+    <div
+      class="absolute size-full overflow-hidden rounded-b-xl outline outline-1 -outline-offset-1 outline-white"
+    >
+      <div class="absolute w-[300px] overflow-hidden opacity-85" :style="clipStyle">
+        <iframe class="absolute size-full" :src="chatUrl" />
+      </div>
     </div>
-
     <button
-      class="absolute top-[calc(100%-8px)] grid size-11 place-items-center rounded-full shadow-lg"
+      class="absolute top-[calc(100%-8px)] grid size-11 place-items-center rounded-full"
       :class="{
         'left-0': !isRight,
         'right-0': isRight,
       }"
       @click="togglePosition"
     >
-      <div class="grid size-6 place-items-center rounded-full bg-black/50">
+      <div class="grid size-6 place-items-center rounded-full bg-black opacity-30">
         <i
-          class="size-5 text-white/50"
+          class="size-5 text-white"
           :class="{
             'i-mdi-arrow-right': !isRight,
             'i-mdi-arrow-left': isRight,
