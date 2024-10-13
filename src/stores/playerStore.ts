@@ -57,6 +57,9 @@ export const usePlayerStore = defineStore("playerStore", () => {
       // ignoreIdが指定されている場合はそのIDはスキップ
       if (videoId === ignoreId) return;
 
+      // ライブ中ならシークしない
+      if (player.getDuration() === 0) return;
+
       const time = player.getCurrentTime();
       player.seekTo(time + offset, true);
     });
