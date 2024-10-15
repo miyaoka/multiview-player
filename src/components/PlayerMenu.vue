@@ -150,7 +150,10 @@ function toggleChat() {
           @click="toggleMute"
           title="Toggle mute"
         >
-          <i :class="`${isMuted ? 'i-mdi-volume-off' : 'i-mdi-volume-high'} size-8`" />
+          <i
+            class="size-8"
+            :class="{ 'i-mdi-volume-off': isMuted, 'i-mdi-volume-high': !isMuted }"
+          />
         </button>
 
         <div

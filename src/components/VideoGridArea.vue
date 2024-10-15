@@ -37,7 +37,9 @@ function ondrop() {
 <template>
   <div
     class="_cell relative flex items-center justify-center overflow-hidden bg-zinc-900 shadow-[inset_10px_10px_50px_rgb(0_0_0_/_0.5)]"
-    :class="`${videoId === videoListStore.draggingVideoId ? 'opacity-50' : ''}`"
+    :class="{
+      'opacity-50': videoId === videoListStore.draggingVideoId,
+    }"
     :style="`grid-area: a${areaIndex}`"
   >
     <div class="_inner relative aspect-video">
@@ -49,7 +51,9 @@ function ondrop() {
     <div
       v-if="videoListStore.draggingVideoId && videoListStore.draggingVideoId !== videoId"
       class="absolute size-full"
-      :class="`${isDragover ? 'bg-green-500/20  outline outline-green-500 -outline-offset-4' : ''}`"
+      :class="{
+        'bg-green-500/20  outline -outline-offset-4 outline-green-500': isDragover,
+      }"
       @dragenter.prevent="ondragenter"
       @dragover.prevent="ondragover"
       @dragleave="ondragleave"
