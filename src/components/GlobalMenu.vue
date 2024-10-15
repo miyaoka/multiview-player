@@ -35,7 +35,7 @@ function onVideoUrlSubmit() {
   <div
     ref="menuEl"
     class="absolute right-2 top-2 z-10 flex w-fit flex-col items-end justify-center bg-yellow-400 shadow-md outline"
-    :class="`${isOpen ? 'rounded-xl' : 'rounded-full'}`"
+    :class="{ 'rounded-xl': isOpen, 'rounded-full': !isOpen }"
   >
     <div class="flex flex-row">
       <div v-if="isOpen" class="flex flex-row">
@@ -124,7 +124,10 @@ function onVideoUrlSubmit() {
         >
           <i
             class="size-8"
-            :class="`${playerStore.isSyncSeek ? 'i-mdi-toggle-switch' : 'i-mdi-toggle-switch-off-outline'}`"
+            :class="{
+              'i-mdi-toggle-switch': playerStore.isSyncSeek,
+              'i-mdi-toggle-switch-off-outline': !playerStore.isSyncSeek,
+            }"
           />
           <p class="absolute bottom-0 text-xs font-bold">
             {{ playerStore.isSyncSeek ? "ON" : "OFF" }}
