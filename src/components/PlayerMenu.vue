@@ -11,6 +11,10 @@ const props = defineProps<{
   isLive: boolean;
 }>();
 
+const emit = defineEmits<{
+  reload: [];
+}>();
+
 const playerStore = usePlayerStore();
 const videoListStore = useVideoListStore();
 
@@ -87,6 +91,10 @@ function toggleChat() {
   const showChat = videoOptions.value?.showChat;
   videoListStore.setVideoOptions(props.videoId, { showChat: !showChat });
 }
+
+function reload() {
+  emit("reload");
+}
 </script>
 
 <template>
@@ -156,16 +164,30 @@ function toggleChat() {
           />
         </button>
 
-        <div
-          class="absolute left-full ml-4 flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline"
-        >
-          <button
-            class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
-            @click="remove"
-            title="Remove"
+        <div class="absolute left-full ml-4 flex flex-row items-center justify-center gap-2">
+          <div
+            class="flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline"
           >
-            <i class="i-mdi-trash-can-outline size-8" />
-          </button>
+            <button
+              class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
+              @click="remove"
+              title="Remove"
+            >
+              <i class="i-mdi-trash-can-outline size-8" />
+            </button>
+          </div>
+
+          <div
+            class="flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline"
+          >
+            <button
+              class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
+              @click="reload"
+              title="Reload player"
+            >
+              <i class="i-mdi-refresh size-8" />
+            </button>
+          </div>
         </div>
       </div>
     </template>
