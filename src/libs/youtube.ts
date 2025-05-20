@@ -1,7 +1,7 @@
 type YoutubeImageQuality = "" | "mq" | "hq" | "sd" | "maxres";
 
 const base = "https://i.ytimg.com/vi/";
-export function getThumnailById(id: string, quality: YoutubeImageQuality) {
+export function getThumbnailById(id: string, quality: YoutubeImageQuality) {
   return `${base}${id}/${quality}default.jpg`;
 }
 
