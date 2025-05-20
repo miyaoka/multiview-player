@@ -205,29 +205,34 @@ export function sortOptimalLayout({
     });
   });
 
-  // min, totalの合計値を計算
-  let minAreaSum = 0;
-  let totalAreaSum = 0;
-  result.forEach((item) => {
-    minAreaSum += item.contentArea.min;
-    totalAreaSum += item.contentArea.total;
-  });
+  // 平均と分散を1回のreduceで計算
+  const {
+    minSum,
+    totalSum,
+    minSquareSum,
+    totalSquareSum,
+  } = result.reduce(
+    (acc, item) => {
+      const min = item.contentArea.min;
+      const total = item.contentArea.total;
+      acc.minSum += min;
+      acc.totalSum += total;
+      acc.minSquareSum += min * min;
+      acc.totalSquareSum += total * total;
+      return acc;
+    },
+    { minSum: 0, totalSum: 0, minSquareSum: 0, totalSquareSum: 0 },
+  );
 
-  // min, totalの平均値を計算
-  const minAreaAverage = minAreaSum / result.length;
-  const totalAreaAverage = totalAreaSum / result.length;
+  const minAreaAverage = minSum / result.length;
+  const totalAreaAverage = totalSum / result.length;
 
-  // 分散を計算
-  let minVariance = 0;
-  let totalVariance = 0;
-  result.forEach((item) => {
-    minVariance += Math.pow(item.contentArea.min - minAreaAverage, 2);
-    totalVariance += Math.pow(item.contentArea.total - totalAreaAverage, 2);
-  });
-
-  // 分散のsqrtを計算
-  minVariance = Math.sqrt(minVariance / result.length);
-  totalVariance = Math.sqrt(totalVariance / result.length);
+  const minVariance = Math.sqrt(
+    Math.max(minSquareSum / result.length - minAreaAverage ** 2, 0),
+  );
+  const totalVariance = Math.sqrt(
+    Math.max(totalSquareSum / result.length - totalAreaAverage ** 2, 0),
+  );
 
   // 偏差値を計算
   const result2 = result.map((item) => {

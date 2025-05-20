@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calculateAreaInCell, enumerateGridDimensions } from "./grid";
+import { calculateAreaInCell, enumerateGridDimensions, sortOptimalLayout } from "./grid";
 
 describe("calculateAreaInCell", () => {
   it("cellのaspect ratioのほうが大きい場合、cellの高さに合わせる", () => {
@@ -75,5 +75,25 @@ describe("enumerateCellCounts", () => {
       { columns: 4, rows: 2 },
       { columns: 5, rows: 1 },
     ]);
+  });
+});
+
+describe("sortOptimalLayout", () => {
+  it("コンテナが16:9でコンテンツが3つの場合、最適レイアウトは2x2", () => {
+    const result = sortOptimalLayout({
+      containerWidth: 1920,
+      containerHeight: 1080,
+      contentCount: 3,
+      contentAspectRatio: 16 / 9,
+    });
+    expect(result[0].layout.id).toBe("2x2");
+    expect(result).toHaveLength(3);
+    // ソート順が偏差値の降順になっているか確認
+    const sorted = [...result].sort(
+      (a, b) => b.minAndtotalAreaDeviation - a.minAndtotalAreaDeviation,
+    );
+    expect(result.map((v) => v.minAndtotalAreaDeviation)).toEqual(
+      sorted.map((v) => v.minAndtotalAreaDeviation),
+    );
   });
 });
