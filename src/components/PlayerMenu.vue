@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useTimeoutFn } from "@vueuse/core";
 import { computed, ref } from "vue";
 import { isTouchDevice, supportsDragAndDrop } from "@/libs/device";
 import { usePlayerStore } from "@/stores/playerStore";
@@ -26,20 +27,25 @@ const menuCloseTimeout = 3000;
 const hasNext = computed(() => props.index < videoListStore.videoIdList.length - 1);
 const hasPrev = computed(() => props.index > 0);
 
-let timeoutId: ReturnType<typeof setTimeout> | undefined = undefined;
-
 const videoOptions = computed(() => videoListStore.videoOptionsMap.get(props.videoId));
 const showChat = computed(() => videoOptions.value?.showChat);
 
 // DnDが使えるかどうかでメニューを切り替える
 const canUseDragAndDrop = computed(() => !isTouchDevice() && supportsDragAndDrop());
 
+// メニューを閉じるタイマー
+const { start: startMenuCloseTimer, stop: stopMenuCloseTimer } = useTimeoutFn(
+  () => {
+    isMenuVisible.value = false;
+  },
+  menuCloseTimeout,
+  { immediate: false },
+);
+
 // 一定時間後にメニューを閉じる
 function setMenuTimeout() {
-  clearTimeout(timeoutId);
-  timeoutId = setTimeout(() => {
-    isMenuVisible.value = false;
-  }, menuCloseTimeout);
+  stopMenuCloseTimer();
+  startMenuCloseTimer();
 }
 
 // ホバーでメニューを開く
