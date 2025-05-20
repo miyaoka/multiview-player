@@ -76,10 +76,10 @@ function remove() {
   videoListStore.removeVideo(props.videoId);
 }
 
-function onDragstart(e: DragEvent) {
+function onDragstart(_e: DragEvent) {
   videoListStore.draggingVideoId = props.videoId;
 }
-function onDragend(e: DragEvent) {
+function onDragend(_e: DragEvent) {
   videoListStore.draggingVideoId = null;
 }
 
