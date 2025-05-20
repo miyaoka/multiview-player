@@ -8,6 +8,18 @@ describe("getYouTubeVideoId", () => {
     ).toBe("abc123");
   });
 
+  it("パラメータ付き watch URL でも ID を取得できる", () => {
+    expect(
+      getYouTubeVideoId("https://www.youtube.com/watch?v=abc123&t=30s")
+    ).toBe("abc123");
+  });
+
+  it("クエリの順序が違っても ID を取得できる", () => {
+    expect(
+      getYouTubeVideoId("https://www.youtube.com/watch?t=30s&v=abc123")
+    ).toBe("abc123");
+  });
+
   it("embed URL からIDを取得できる", () => {
     expect(
       getYouTubeVideoId("https://www.youtube.com/embed/abc123")
