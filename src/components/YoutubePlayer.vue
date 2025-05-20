@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useIntervalFn } from "@vueuse/core";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import PlayerMenu from "./PlayerMenu.vue";
 import { useYouTubeIframeAPI } from "@/composables/useYouTubeIframeApi";
@@ -52,8 +53,19 @@ function onVolumeChange(evt: YT.OnVolumeChangeEvent) {
   isMuted.value = data.muted;
 }
 
+// 再生位置の監視間隔（ミリ秒）
+const currentTimeUpdateInterval = 1000;
+
 // 再生位置の監視用
-let currentTimeIntervalId: ReturnType<typeof setInterval> | undefined = undefined;
+const { pause: pauseTimeInterval, resume: resumeTimeInterval } = useIntervalFn(
+  () => {
+    if (player.value) {
+      currentTime.value = player.value.getCurrentTime();
+    }
+  },
+  currentTimeUpdateInterval,
+  { immediate: false }, // 初期状態では実行しない
+);
 
 // シーク中はpause状態になる。シークバーをクリックしたところでpauseし、離したところでplayingになる
 // 元々pause状態だったら何も起こらない
@@ -67,9 +79,7 @@ function onStateChange(evt: YT.OnStateChangeEvent) {
       const offset = time - currentTime.value;
       currentTime.value = time;
       // プレイ中は再生位置を監視
-      currentTimeIntervalId = setInterval(() => {
-        currentTime.value = evt.target.getCurrentTime();
-      }, 1000);
+      resumeTimeInterval();
 
       // ライブ中なら終了
       if (isLive.value) break;
@@ -87,7 +97,7 @@ function onStateChange(evt: YT.OnStateChangeEvent) {
     }
     case YT.PlayerState.PAUSED: {
       // 再生位置の監視をを解除
-      clearInterval(currentTimeIntervalId);
+      pauseTimeInterval();
 
       isPaused.value = true;
       // const time = evt.target.getCurrentTime();
@@ -96,7 +106,7 @@ function onStateChange(evt: YT.OnStateChangeEvent) {
     }
     case YT.PlayerState.BUFFERING: {
       // 再生位置の監視をを解除
-      clearInterval(currentTimeIntervalId);
+      pauseTimeInterval();
       // const time = evt.target.getCurrentTime();
       // console.log("buffering", time);
       break;
@@ -104,7 +114,7 @@ function onStateChange(evt: YT.OnStateChangeEvent) {
 
     case YT.PlayerState.ENDED: {
       isPaused.value = true;
-      clearInterval(currentTimeIntervalId);
+      pauseTimeInterval();
       // durationをcurrentTimeにセット
       const time = evt.target.getDuration();
       currentTime.value = time;
@@ -159,7 +169,7 @@ async function initializePlayer() {
 
 // プレーヤーの破棄処理を共通化
 function destroyPlayer() {
-  clearInterval(currentTimeIntervalId);
+  pauseTimeInterval();
 
   if (player.value) {
     playerStore.removePlayer(props.videoId);
