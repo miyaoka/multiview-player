@@ -14,7 +14,7 @@ const playerStore = usePlayerStore();
 const videoListStore = useVideoListStore();
 const youTubeIframeAPI = useYouTubeIframeAPI();
 
-const playerEl = ref<HTMLElement | null>(null);
+const playerContainer = ref<HTMLElement | null>(null);
 const player = ref<YT.Player | null>(null);
 const isMuted = ref(true);
 const isPaused = ref(true);
@@ -122,11 +122,20 @@ function onStateChange(evt: YT.OnStateChangeEvent) {
   }
 }
 
-onMounted(async () => {
-  if (!playerEl.value) return;
+// プレーヤー初期化関数
+async function initializePlayer() {
+  if (!playerContainer.value) return;
   await youTubeIframeAPI.onReady;
 
-  const ytPlayer = new YT.Player(playerEl.value, {
+  // 既存のコンテンツをクリア
+  playerContainer.value.innerHTML = "";
+
+  // 新しいdiv要素を動的に作成
+  const newPlayerEl = document.createElement("div");
+  playerContainer.value.appendChild(newPlayerEl);
+
+  // プレーヤーを初期化
+  const ytPlayer = new YT.Player(newPlayerEl, {
     videoId: props.videoId,
     width: "100%",
     height: "100%",
@@ -146,15 +155,34 @@ onMounted(async () => {
 
   player.value = ytPlayer;
   playerStore.addPlayer(props.videoId, ytPlayer);
+}
+
+// プレーヤーの破棄処理を共通化
+function destroyPlayer() {
+  clearInterval(currentTimeIntervalId);
+
+  if (player.value) {
+    playerStore.removePlayer(props.videoId);
+    player.value.destroy();
+    player.value = null;
+  }
+}
+
+// プレーヤー再読み込み関数
+function reloadPlayer() {
+  // 現在のプレーヤーを破棄
+  destroyPlayer();
+
+  // initializePlayerを再利用してプレーヤーを再作成
+  initializePlayer();
+}
+
+onMounted(() => {
+  initializePlayer();
 });
 
 onBeforeUnmount(() => {
-  clearInterval(currentTimeIntervalId);
-
-  if (!player.value) return;
-  playerStore.removePlayer(props.videoId);
-  player.value.destroy();
-  player.value = null;
+  destroyPlayer();
 });
 </script>
 
@@ -165,7 +193,13 @@ onBeforeUnmount(() => {
     @pointerenter="playerStore.setActiveVideoId(videoId)"
     @pointerleave="playerStore.setActiveVideoId(null)"
   >
-    <div ref="playerEl" />
-    <PlayerMenu :videoId="videoId" :index="index" :isMuted="isMuted" :isLive="isLive" />
+    <div ref="playerContainer" class="size-full"></div>
+    <PlayerMenu
+      :videoId="videoId"
+      :index="index"
+      :isMuted="isMuted"
+      :isLive="isLive"
+      @reload="reloadPlayer"
+    />
   </div>
 </template>
