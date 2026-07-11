@@ -1,1 +1,14 @@
 @import "tailwindcss";
+
+/*
+  Tailwind v4 の preflight は button を cursor: default にするため、
+  クリック可能なボタンに pointer を戻す（公式 upgrade guide のスニペット）。
+  disabled 時は「押せない」表現と矛盾しないよう除外する
+  https://tailwindcss.com/docs/upgrade-guide
+*/
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
