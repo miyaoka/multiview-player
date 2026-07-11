@@ -19,7 +19,8 @@ const playerContainer = ref<HTMLElement | null>(null);
 const player = ref<YT.Player | null>(null);
 const isMuted = ref(true);
 const isPaused = ref(true);
-const isLive = ref(false);
+// ライブ判定は playerStore の確定値を参照する（onReady 前は undefined = 非ライブ扱い）
+const isLive = computed(() => playerStore.liveStatusMap.get(props.videoId) === true);
 const volume = ref(0);
 const currentTime = ref(0);
 
@@ -43,8 +44,8 @@ function onReady(evt: YT.PlayerEvent) {
   const player = evt.target;
 
   // 動画の長さが0の場合はライブ配信
-  const duration = player.getDuration();
-  isLive.value = duration === 0;
+  // 再生開始後の getDuration() はライブでも経過時間（非0）を返すため、onReady 時点で確定させる
+  playerStore.setLiveStatus(props.videoId, player.getDuration() === 0);
 }
 
 // 全体制御からのチャット表示コマンドを処理する
