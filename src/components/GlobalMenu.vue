@@ -144,47 +144,47 @@ function toggleAllChat() {
           <p class="absolute bottom-0 text-xs font-bold">+10m</p>
         </button>
       </div>
-      <div class="flex items-center">
+      <button
+        :disabled="!hasVideos"
+        class="flex items-center rounded-full pl-3 hover:bg-yellow-200 disabled:opacity-20"
+        @click="playerStore.toggleSyncSeek"
+        title="Sync seek"
+      >
         連結してシーク
-        <button
-          :disabled="!hasVideos"
-          class="relative grid size-11 place-items-center rounded-full hover:bg-yellow-200 disabled:opacity-20"
-          @click="playerStore.toggleSyncSeek"
-          title="Sync seek"
-        >
+        <span class="relative grid size-11 place-items-center">
           <component
             :is="playerStore.isSyncSeek ? IconToggleSwitch : IconToggleSwitchOffOutline"
             class="size-8"
           />
-          <p class="absolute bottom-0 text-xs font-bold">
+          <span class="absolute bottom-0 text-xs font-bold">
             {{ playerStore.isSyncSeek ? "ON" : "OFF" }}
-          </p>
-        </button>
-      </div>
-      <div class="flex items-center">
+          </span>
+        </span>
+      </button>
+      <button
+        :disabled="!hasVideos"
+        class="flex items-center rounded-full pl-3 hover:bg-yellow-200 disabled:opacity-20"
+        @click="toggleAllChat"
+        title="Toggle all chats"
+      >
         コメント一括
-        <button
-          :disabled="!hasVideos"
-          class="relative grid size-11 place-items-center rounded-full hover:bg-yellow-200 disabled:opacity-20"
-          @click="toggleAllChat"
-          title="Toggle all chats"
-        >
+        <span class="relative grid size-11 place-items-center">
           <component
             :is="isAnyChatShown ? IconEllipsesBubbleFill : IconEllipsesBubble"
             class="size-8"
           />
-        </button>
-      </div>
-      <div class="flex items-center">
+        </span>
+      </button>
+      <button
+        class="flex items-center rounded-full pl-3 hover:bg-yellow-200"
+        popovertarget="editListPopover"
+        title="Edit video list"
+      >
         リストを編集
-        <button
-          class="grid size-11 place-items-center rounded-full hover:bg-yellow-200"
-          popovertarget="editListPopover"
-          title="Edit video list"
-        >
+        <span class="grid size-11 place-items-center">
           <IconPlaylistEdit class="size-8" />
-        </button>
-      </div>
+        </span>
+      </button>
 
       <div
         popover
