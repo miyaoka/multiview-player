@@ -25,7 +25,10 @@ const authorWidth = 40;
 const containerPadding = 8;
 // 縦サイズ（通常時 / フル表示時）
 const halfHeight = "40%";
-const fullHeight = "100%";
+// フル表示でも下端をセル境界から離し、丸角と輪郭を見せる
+// （グリッドは gap なしなので、100% にすると縦に並んだ隣接セルのチャットと地続きに見える）
+const fullHeightBottomGap = 12;
+const fullHeight = `calc(100% - ${fullHeightBottomGap}px)`;
 
 const clipTop = headerHeight + tickerHeight + pinnedHeight;
 const clipBottom = footerHeight;
@@ -45,7 +48,7 @@ const clipStyle = {
 // 左右どちらに配置するか
 const isRight = ref(false);
 // 縦フルサイズ表示か
-const isFullHeight = ref(false);
+const isFullHeight = ref(true);
 
 const containerStyle = computed(() => {
   return {
