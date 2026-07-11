@@ -68,10 +68,13 @@ export const useVideoListStore = defineStore("videoListStore", () => {
   // 空入力も適用しない（全行削除は編集ミスの可能性が高く、router.replace のため復元不能なので）
   function setVideoListByText(text: string): { invalidTokens: string[] } {
     const tokens = tokenizeText(text);
-    const invalidTokens = tokens.filter((token) => getYouTubeVideoId(token) === undefined);
+    // エラー表示用なので重複除去する（v-forのkeyにも使われる）
+    const invalidTokens = Array.from(
+      new Set(tokens.filter((token) => getYouTubeVideoId(token) === undefined)),
+    );
     if (invalidTokens.length > 0) return { invalidTokens };
 
-    const vids = Array.from(new Set(tokens.flatMap((url) => getYouTubeVideoId(url) ?? [])));
+    const vids = parseVideoIdsByText(text);
     if (vids.length === 0) return { invalidTokens: [] };
 
     // videoIdListは並び替えると表示リセットされるため、既存の順序を保ったまま削除・追加のみ行う
