@@ -61,7 +61,7 @@ function setMenuTimeout() {
 // ホバーでメニューを開く
 // タッチデバイスではクリック後
 function onMouseenter() {
-  // クリック時に直接メニューないのボタンが押されないように遅らせる
+  // クリック時にメニュー内のボタンが直接押されないよう 1 フレーム遅らせる
   requestAnimationFrame(() => {
     isMenuVisible.value = true;
     setMenuTimeout();
@@ -114,15 +114,21 @@ function reload() {
 </script>
 
 <template>
+  <!--
+    ラッパーは絶対配置の shrink-to-fit で全メニュー（削除・リロード含む）を内包する 1 枚の
+    矩形になり、そこがホバー領域になる。ボタン間の隙間もラッパーの box 内なのでホバーは途切れない。
+    メニューは v-if ではなく visibility で隠す。非表示時もレイアウトサイズを保ってホバーの
+    当たり判定を作りつつ、hidden な要素はヒットテスト対象外なのでボタンは押せない
+  -->
   <div
-    class="absolute inset-0 bottom-auto z-10 flex h-16 items-center justify-center"
+    class="absolute top-0 left-1/2 z-10 flex h-16 -translate-x-1/2 items-center px-4"
     @mouseenter="onMouseenter"
     @mousemove="onMousemove"
     @mouseleave="onMouseleave"
   >
-    <template v-if="isMenuVisible">
+    <div class="flex flex-row items-center gap-4" :class="{ invisible: !isMenuVisible }">
       <div
-        class="relative flex size-fit flex-row items-center justify-center rounded-full bg-white px-4 shadow-md outline-solid"
+        class="flex size-fit flex-row items-center justify-center rounded-full bg-white px-4 shadow-md outline-solid"
       >
         <button
           v-if="canUseDragAndDrop"
@@ -170,33 +176,33 @@ function reload() {
         >
           <component :is="isMuted ? IconVolumeOff : IconVolumeHigh" class="size-8" />
         </button>
+      </div>
 
-        <div class="absolute left-full ml-4 flex flex-row items-center justify-center gap-2">
-          <div
-            class="flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline-solid"
+      <div class="flex flex-row items-center justify-center gap-2">
+        <div
+          class="flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline-solid"
+        >
+          <button
+            class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
+            @click="remove"
+            title="Remove"
           >
-            <button
-              class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
-              @click="remove"
-              title="Remove"
-            >
-              <IconTrashCanOutline class="size-8" />
-            </button>
-          </div>
+            <IconTrashCanOutline class="size-8" />
+          </button>
+        </div>
 
-          <div
-            class="flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline-solid"
+        <div
+          class="flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline-solid"
+        >
+          <button
+            class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
+            @click="reload"
+            title="Reload player"
           >
-            <button
-              class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
-              @click="reload"
-              title="Reload player"
-            >
-              <IconRefresh class="size-8" />
-            </button>
-          </div>
+            <IconRefresh class="size-8" />
+          </button>
         </div>
       </div>
-    </template>
+    </div>
   </div>
 </template>
