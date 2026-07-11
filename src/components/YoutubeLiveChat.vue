@@ -23,8 +23,8 @@ const msgPaddingWidth = 24;
 const authorWidth = 40;
 
 const containerPadding = 8;
-// 縦サイズ（通常時 / フル表示時）
-const halfHeight = "40%";
+// 縮小表示時の縦サイズ
+const collapsedHeight = "40%";
 // フル表示でも下端をセル境界から離し、丸角と輪郭を見せる
 // （グリッドは gap なしなので、100% にすると縦に並んだ隣接セルのチャットと地続きに見える）
 const fullHeightBottomGap = 12;
@@ -52,7 +52,7 @@ const isFullHeight = ref(true);
 
 const containerStyle = computed(() => {
   return {
-    height: isFullHeight.value ? fullHeight : halfHeight,
+    height: isFullHeight.value ? fullHeight : collapsedHeight,
     width: `${clipWidth}px`,
     ...(isRight.value ? { right: 0 } : { left: 0 }),
   };
@@ -89,6 +89,7 @@ function toggleFullHeight() {
       class="group/btn absolute top-1/2 grid size-11 -translate-y-1/2 place-items-center opacity-0 transition-opacity group-hover:opacity-100"
       :class="isRight ? 'left-0' : 'right-0'"
       @click="togglePosition"
+      title="Toggle position"
     >
       <div
         class="grid size-7 place-items-center rounded-full border border-white/40 bg-black/60 shadow-md backdrop-blur-sm transition-transform group-hover/btn:scale-110"
@@ -100,6 +101,7 @@ function toggleFullHeight() {
     <button
       class="group/btn absolute bottom-0 left-1/2 grid size-11 -translate-x-1/2 place-items-center opacity-0 transition-opacity group-hover:opacity-100"
       @click="toggleFullHeight"
+      title="Toggle height"
     >
       <div
         class="grid size-7 place-items-center rounded-full border border-white/40 bg-black/60 shadow-md backdrop-blur-sm transition-transform group-hover/btn:scale-110"
