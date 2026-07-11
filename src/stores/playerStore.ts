@@ -5,7 +5,7 @@ export const usePlayerStore = defineStore("playerStore", () => {
   const playerMap = ref<Map<string, YT.Player>>(new Map());
 
   // 動画ごとのチャット表示コマンドハンドラー
-  // ライブ判定は各動画コンポーネントが持つため、全体操作はコマンドを送るだけにする
+  // 全体操作は各動画へのコマンド送信のみ行い、表示可否の判断と書き込みは各動画側の処理に委ねる設計
   const chatHandlerMap = ref<Map<string, (show: boolean) => void>>(new Map());
 
   // 動画ごとのライブ判定（onReady 時点で確定した値）
