@@ -48,13 +48,9 @@ const isAnyChatShown = computed(() =>
 );
 
 // 全動画のチャット表示を一括切替（1つでも表示中なら全非表示、なければ全表示）
+// ライブ判定は各動画側が行うため、ここではコマンドを送るだけ
 function toggleAllChat() {
-  const show = !isAnyChatShown.value;
-  playerStore.playerMap.forEach((player, videoId) => {
-    // チャットはライブ配信（durationが0）のみ表示できるため、表示時は非ライブをスキップ
-    if (show && player.getDuration() !== 0) return;
-    videoListStore.setVideoOptions(videoId, { showChat: show });
-  });
+  playerStore.setAllChatVisibility(!isAnyChatShown.value);
 }
 </script>
 

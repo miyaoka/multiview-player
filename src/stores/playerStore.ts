@@ -4,6 +4,10 @@ import { ref } from "vue";
 export const usePlayerStore = defineStore("playerStore", () => {
   const playerMap = ref<Map<string, YT.Player>>(new Map());
 
+  // 動画ごとのチャット表示コマンドハンドラー
+  // ライブ判定は各動画コンポーネントが持つため、全体操作はコマンドを送るだけにする
+  const chatHandlerMap = ref<Map<string, (show: boolean) => void>>(new Map());
+
   // シーク時に全動画を一緒に動かすかどうか
   const isSyncSeek = ref(false);
   // ユーザーが操作中の動画のID
@@ -20,6 +24,21 @@ export const usePlayerStore = defineStore("playerStore", () => {
   // プレイヤーを削除
   function removePlayer(videoId: string) {
     playerMap.value.delete(videoId);
+  }
+
+  // チャット表示コマンドハンドラーを登録
+  function addChatHandler(videoId: string, handler: (show: boolean) => void) {
+    chatHandlerMap.value.set(videoId, handler);
+  }
+  // チャット表示コマンドハンドラーを削除
+  function removeChatHandler(videoId: string) {
+    chatHandlerMap.value.delete(videoId);
+  }
+  // 全動画にチャット表示コマンドを送る
+  function setAllChatVisibility(show: boolean) {
+    chatHandlerMap.value.forEach((handler) => {
+      handler(show);
+    });
   }
 
   // 全再生
@@ -75,6 +94,9 @@ export const usePlayerStore = defineStore("playerStore", () => {
     toggleSyncSeek,
     addPlayer,
     removePlayer,
+    addChatHandler,
+    removeChatHandler,
+    setAllChatVisibility,
     playAll,
     pauseAll,
     muteAll,

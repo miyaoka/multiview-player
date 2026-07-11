@@ -47,6 +47,13 @@ function onReady(evt: YT.PlayerEvent) {
   isLive.value = duration === 0;
 }
 
+// 全体制御からのチャット表示コマンドを処理する
+// 個別ボタン（v-if="isLive"）と同じく、表示できるのはライブ配信のみ
+function setChatVisibility(show: boolean) {
+  if (show && !isLive.value) return;
+  videoListStore.setVideoOptions(props.videoId, { showChat: show });
+}
+
 function onVolumeChange(evt: YT.OnVolumeChangeEvent) {
   const data = evt.data;
   volume.value = data.volume;
@@ -165,6 +172,7 @@ async function initializePlayer() {
 
   player.value = ytPlayer;
   playerStore.addPlayer(props.videoId, ytPlayer);
+  playerStore.addChatHandler(props.videoId, setChatVisibility);
 }
 
 // プレーヤーの破棄処理を共通化
@@ -173,6 +181,7 @@ function destroyPlayer() {
 
   if (player.value) {
     playerStore.removePlayer(props.videoId);
+    playerStore.removeChatHandler(props.videoId);
     player.value.destroy();
     player.value = null;
   }
