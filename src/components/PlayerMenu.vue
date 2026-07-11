@@ -23,6 +23,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   reload: [];
+  toggleChat: [];
 }>();
 
 const playerStore = usePlayerStore();
@@ -102,9 +103,9 @@ function onDragend(_e: DragEvent) {
   videoListStore.draggingVideoId = null;
 }
 
+// チャット表示の書き込みは親（YoutubePlayer）のコマンド処理に委ねる
 function toggleChat() {
-  const showChat = videoOptions.value?.showChat;
-  videoListStore.setVideoOptions(props.videoId, { showChat: !showChat });
+  emit("toggleChat");
 }
 
 function reload() {
