@@ -60,7 +60,7 @@ function setMenuTimeout() {
 // ホバーでメニューを開く
 // タッチデバイスではクリック後
 function onMouseenter() {
-  // クリック時に直接メニューないのボタンが押されないように遅らせる
+  // クリック時にメニュー内のボタンが直接押されないよう 1 フレーム遅らせる
   requestAnimationFrame(() => {
     isMenuVisible.value = true;
     setMenuTimeout();
