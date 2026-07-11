@@ -48,11 +48,17 @@ function onReady(evt: YT.PlayerEvent) {
   playerStore.setLiveStatus(props.videoId, player.getDuration() === 0);
 }
 
-// 全体制御からのチャット表示コマンドを処理する
-// 個別ボタン（v-if="isLive"）と同じく、表示できるのはライブ配信のみ
+// チャット表示コマンドを処理する（全体制御・個別ボタン共通の経路）
+// 表示できるのはライブ配信のみ
 function setChatVisibility(show: boolean) {
   if (show && !isLive.value) return;
   videoListStore.setVideoOptions(props.videoId, { showChat: show });
+}
+
+// 個別ボタンのトグルも同じコマンド処理を経由させる
+function toggleChat() {
+  const showChat = videoListStore.videoOptionsMap.get(props.videoId)?.showChat;
+  setChatVisibility(!showChat);
 }
 
 function onVolumeChange(evt: YT.OnVolumeChangeEvent) {
@@ -220,6 +226,7 @@ onBeforeUnmount(() => {
       :isMuted="isMuted"
       :isLive="isLive"
       @reload="reloadPlayer"
+      @toggle-chat="toggleChat"
     />
   </div>
 </template>
