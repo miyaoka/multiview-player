@@ -7,10 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "vue-tsc --build --force",
-    "lint": "oxlint && eslint .",
-    "fix": "eslint . --fix && oxfmt .",
+    "lint": "oxlint && eslint . --max-warnings 0",
+    "fix": "oxlint --fix && eslint . --fix && oxfmt .",
     "prepare": "lefthook install"
   },
   "dependencies": {
