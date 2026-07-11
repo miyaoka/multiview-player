@@ -11,6 +11,9 @@ const urlInputTextarea = ref(
   videoListStore.videoIdGridOrder.map((id) => `${getVideoUrlById(id)}\n`).join(""),
 );
 
+// URLとして解釈できなかったトークン。反映がブロックされたときのエラー表示に使う
+const invalidTokens = ref<string[]>([]);
+
 const emit = defineEmits<{
   submit: [];
 }>();
@@ -20,7 +23,11 @@ function onUrlsSubmit(e: Event) {
   e.preventDefault();
 
   // テキストエリアの内容でリスト全体を置き換え
-  videoListStore.setVideoListByText(urlInputTextarea.value);
+  const result = videoListStore.setVideoListByText(urlInputTextarea.value);
+
+  // 解釈できない行があると反映されないため、エラー表示して開いたままにする
+  invalidTokens.value = result.invalidTokens;
+  if (result.invalidTokens.length > 0) return;
 
   emit("submit");
 }
@@ -36,6 +43,13 @@ function onUrlsSubmit(e: Event) {
       <div class="flex flex-col">
         <p class="text-base font-bold">YouTubeの動画URLを1行ずつ入力してください</p>
         <p class="text-sm text-gray-600">行の追加・削除・並び替えがそのままリストに反映されます</p>
+
+        <div v-if="invalidTokens.length > 0" class="text-sm text-red-600">
+          <p>URLとして解釈できない行があるため反映していません</p>
+          <ul class="list-disc pl-5">
+            <li v-for="token in invalidTokens" :key="token" class="break-all">{{ token }}</li>
+          </ul>
+        </div>
 
         <form @submit="onUrlsSubmit" class="flex flex-col gap-2">
           <textarea

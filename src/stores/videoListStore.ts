@@ -39,15 +39,17 @@ export const useVideoListStore = defineStore("videoListStore", () => {
     });
   }
 
-  // 入力テキストから動画IDを抽出（スペース・改行区切り、重複除去）
-  function parseVideoIdsByText(text: string): string[] {
-    const urls = text
+  // 入力テキストを空白・改行区切りのトークンに分割
+  function tokenizeText(text: string): string[] {
+    return text
       .split(/\s+/)
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
+  }
 
-    // id部分を取り出し
-    const vids = urls.flatMap((url) => getYouTubeVideoId(url) ?? []);
+  // 入力テキストから動画IDを抽出（解釈できないトークンは無視、重複除去）
+  function parseVideoIdsByText(text: string): string[] {
+    const vids = tokenizeText(text).flatMap((url) => getYouTubeVideoId(url) ?? []);
     return Array.from(new Set(vids));
   }
 
@@ -61,8 +63,16 @@ export const useVideoListStore = defineStore("videoListStore", () => {
   }
 
   // 入力テキストでリスト全体を置き換え（編集欄からの反映。削除・追加・並び替えを含む）
-  function setVideoListByText(text: string) {
-    const vids = parseVideoIdsByText(text);
+  // 既存動画のURL行をタイポすると動画が黙って消えるため、解釈できないトークンが
+  // 1つでもあれば適用せず invalidTokens として返し、呼び出し側でエラー表示する
+  // 空入力も適用しない（全行削除は編集ミスの可能性が高く、router.replace のため復元不能なので）
+  function setVideoListByText(text: string): { invalidTokens: string[] } {
+    const tokens = tokenizeText(text);
+    const invalidTokens = tokens.filter((token) => getYouTubeVideoId(token) === undefined);
+    if (invalidTokens.length > 0) return { invalidTokens };
+
+    const vids = Array.from(new Set(tokens.flatMap((url) => getYouTubeVideoId(url) ?? [])));
+    if (vids.length === 0) return { invalidTokens: [] };
 
     // videoIdListは並び替えると表示リセットされるため、既存の順序を保ったまま削除・追加のみ行う
     const remainedIdList = videoIdList.value.filter((id) => vids.includes(id));
@@ -78,6 +88,7 @@ export const useVideoListStore = defineStore("videoListStore", () => {
       videoOptionsMap.value.delete(id);
     }
     updateQuery();
+    return { invalidTokens: [] };
   }
   // 動画リストを追加
   function addVideoList(idList: string[]) {
