@@ -1,0 +1,24 @@
+# ** が0階層以上にマッチするようにする（デフォルトは1階層以上）
+glob_matcher: doublestar
+
+output:
+  - execution_out
+
+pre-commit:
+  # 同一ファイルへの競合を避けるため piped で直列実行
+  piped: true
+  jobs:
+    - name: oxlint
+      glob: "**/*.ts"
+      run: pnpm exec oxlint --fix {staged_files}
+      stage_fixed: true
+    - name: eslint
+      glob: "**/*.{ts,vue}"
+      run: pnpm exec eslint --no-warn-ignored --cache --fix {staged_files}
+      stage_fixed: true
+    # oxfmt は対象拡張子を明示。glob 無しだと .json/.svg/.png まで
+    # 受けて exit 2 で落ちるため {ts,vue,css,md} に限定する。
+    - name: oxfmt
+      glob: "**/*.{ts,vue,css,md}"
+      run: pnpm exec oxfmt {staged_files}
+      stage_fixed: true

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { sortOptimalLayout, type GridLayout } from "@/libs/grid";
+import { sortOptimalLayout, type GridLayout } from "../libs/grid";
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
@@ -30,7 +30,7 @@ const gridLayoutList = computed<
 
 <template>
   <main class="grid place-items-center p-4">
-    <div class="fixed left-2 top-2 z-10 flex flex-col bg-gray-100 p-2 shadow">
+    <div class="fixed top-2 left-2 z-10 flex flex-col bg-gray-100 p-2 shadow-sm">
       <label>
         <p>Container Width: {{ containerWidth }}</p>
         <input type="range" v-model.number="containerWidth" min="50" max="1000" step="1" />
@@ -87,7 +87,7 @@ const gridLayoutList = computed<
         </div>
 
         <div
-          class="grid outline"
+          class="grid outline-solid"
           :style="{
             width: `${containerWidth}px`,
             height: `${containerHeight}px`,
@@ -97,11 +97,11 @@ const gridLayoutList = computed<
           <div
             v-for="(_, cellIdx) in contentCount"
             :key="cellIdx"
-            class="_cell flex items-center justify-center overflow-hidden outline outline-1 outline-gray-300"
+            class="_cell flex items-center justify-center overflow-hidden outline-1 outline-gray-300 outline-solid"
             :style="`grid-area: a${cellIdx}`"
           >
             <div
-              class="relative flex flex-col items-center justify-center bg-gray-500 text-sm text-white outline outline-1 -outline-offset-1 outline-white"
+              class="relative flex flex-col items-center justify-center bg-gray-500 text-sm text-white outline-1 -outline-offset-1 outline-white outline-solid"
               :style="{
                 aspectRatio: `${contentAspectRatio}`,
               }"

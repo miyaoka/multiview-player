@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { useVideoListStore } from "../stores/videoListStore";
 import VideoGridArea from "./VideoGridArea.vue";
-import type { GridLayout } from "@/libs/grid";
-import { useVideoListStore } from "@/stores/videoListStore";
+import type { GridLayout } from "../libs/grid";
 
 const videoListStore = useVideoListStore();
 

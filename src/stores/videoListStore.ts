@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { getYouTubeVideoId } from "@/libs/youtube";
+import { getYouTubeVideoId } from "../libs/youtube";
 
 interface VideoOptions {
   showChat: boolean;

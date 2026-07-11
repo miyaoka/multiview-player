@@ -1,6 +1,12 @@
 packages:
   - "."
 
-onlyBuiltDependencies:
-  - esbuild
-  - vue-demi
+allowBuilds:
+  "@tailwindcss/oxide": true
+  esbuild: true
+  lefthook: true
+  unrs-resolver: true
+  vue-demi: true
+
+# 公開から1日未満のバージョンをインストールしない（supply-chain 攻撃対策）
+minimumReleaseAge: 1440
