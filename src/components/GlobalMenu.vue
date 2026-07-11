@@ -4,6 +4,8 @@ import { computed, ref } from "vue";
 import { usePlayerStore } from "../stores/playerStore";
 import { useVideoListStore } from "../stores/videoListStore";
 import VideoUrlInput from "./VideoUrlInput.vue";
+import IconEllipsesBubble from "~icons/f7/ellipses-bubble";
+import IconEllipsesBubbleFill from "~icons/f7/ellipses-bubble-fill";
 import IconClose from "~icons/mdi/close";
 import IconDotsVertical from "~icons/mdi/dots-vertical";
 import IconFastForward from "~icons/mdi/fast-forward";
@@ -38,6 +40,21 @@ function toggleOpen() {
 
 function onVideoUrlSubmit() {
   editListPopoverEl.value?.hidePopover();
+}
+
+// チャットを表示中の動画が1つでもあるか
+const isAnyChatShown = computed(() =>
+  [...videoListStore.videoOptionsMap.values()].some((options) => options.showChat),
+);
+
+// 全動画のチャット表示を一括切替（1つでも表示中なら全非表示、なければ全表示）
+function toggleAllChat() {
+  const show = !isAnyChatShown.value;
+  playerStore.playerMap.forEach((player, videoId) => {
+    // チャットはライブ配信（durationが0）のみ表示できるため、表示時は非ライブをスキップ
+    if (show && player.getDuration() !== 0) return;
+    videoListStore.setVideoOptions(videoId, { showChat: show });
+  });
 }
 </script>
 
@@ -139,6 +156,20 @@ function onVideoUrlSubmit() {
           <p class="absolute bottom-0 text-xs font-bold">
             {{ playerStore.isSyncSeek ? "ON" : "OFF" }}
           </p>
+        </button>
+      </div>
+      <div class="flex items-center">
+        コメント一括
+        <button
+          :disabled="!hasVideos"
+          class="relative grid size-11 place-items-center rounded-full hover:bg-yellow-200 disabled:opacity-20"
+          @click="toggleAllChat"
+          title="Toggle all chats"
+        >
+          <component
+            :is="isAnyChatShown ? IconEllipsesBubbleFill : IconEllipsesBubble"
+            class="size-8"
+          />
         </button>
       </div>
       <div class="flex items-center">
