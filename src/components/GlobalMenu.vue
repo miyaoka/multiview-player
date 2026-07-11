@@ -11,7 +11,7 @@ import IconDotsVertical from "~icons/mdi/dots-vertical";
 import IconFastForward from "~icons/mdi/fast-forward";
 import IconPause from "~icons/mdi/pause";
 import IconPlay from "~icons/mdi/play";
-import IconPlus from "~icons/mdi/plus";
+import IconPlaylistEdit from "~icons/mdi/playlist-edit";
 import IconRewind from "~icons/mdi/rewind";
 import IconToggleSwitch from "~icons/mdi/toggle-switch";
 import IconToggleSwitchOffOutline from "~icons/mdi/toggle-switch-off-outline";
@@ -36,6 +36,13 @@ function toggleOpen() {
     isOpen.value = false;
     removeClickOutsideListener();
   });
+}
+
+// popoverの開閉状態。開くたびにVideoUrlInputを再マウントして最新のリストで初期化する
+const isEditListOpen = ref(false);
+
+function onEditListToggle(e: Event) {
+  isEditListOpen.value = (e as ToggleEvent).newState === "open";
 }
 
 function onVideoUrlSubmit() {
@@ -169,13 +176,13 @@ function toggleAllChat() {
         </button>
       </div>
       <div class="flex items-center">
-        動画を追加
+        リストを編集
         <button
           class="grid size-11 place-items-center rounded-full hover:bg-yellow-200"
           popovertarget="editListPopover"
-          title="Add video"
+          title="Edit video list"
         >
-          <IconPlus class="size-8" />
+          <IconPlaylistEdit class="size-8" />
         </button>
       </div>
 
@@ -184,8 +191,9 @@ function toggleAllChat() {
         ref="editListPopoverEl"
         id="editListPopover"
         class="top-2 right-2 bottom-auto left-auto overflow-visible bg-transparent p-0"
+        @toggle="onEditListToggle"
       >
-        <VideoUrlInput @submit="onVideoUrlSubmit" />
+        <VideoUrlInput v-if="isEditListOpen" @submit="onVideoUrlSubmit" />
         <button
           class="absolute top-0 right-0 z-10 flex size-11 items-center justify-center text-gray-800 hover:text-gray-600"
           popovertarget="editListPopover"

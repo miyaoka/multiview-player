@@ -39,9 +39,8 @@ export const useVideoListStore = defineStore("videoListStore", () => {
     });
   }
 
-  // 入力テキストから動画を追加
-  function addVideoByText(text: string) {
-    // スペース区切りで分割
+  // 入力テキストから動画IDを抽出（スペース・改行区切り、重複除去）
+  function parseVideoIdsByText(text: string): string[] {
     const urls = text
       .split(/\s+/)
       .map((line) => line.trim())
@@ -49,10 +48,36 @@ export const useVideoListStore = defineStore("videoListStore", () => {
 
     // id部分を取り出し
     const vids = urls.flatMap((url) => getYouTubeVideoId(url) ?? []);
+    return Array.from(new Set(vids));
+  }
+
+  // 入力テキストから動画を追加
+  function addVideoByText(text: string) {
+    const vids = parseVideoIdsByText(text);
     if (vids.length === 0) return;
 
     // 動画リストに追加
     addVideoList(vids);
+  }
+
+  // 入力テキストでリスト全体を置き換え（編集欄からの反映。削除・追加・並び替えを含む）
+  function setVideoListByText(text: string) {
+    const vids = parseVideoIdsByText(text);
+
+    // videoIdListは並び替えると表示リセットされるため、既存の順序を保ったまま削除・追加のみ行う
+    const remainedIdList = videoIdList.value.filter((id) => vids.includes(id));
+    const addedIdList = vids.filter((id) => !videoIdList.value.includes(id));
+    videoIdList.value = [...remainedIdList, ...addedIdList];
+
+    // 表示順は入力テキストの順序をそのまま反映
+    videoIdGridOrder.value = vids;
+
+    // 削除された動画のオプションを破棄
+    for (const [id] of videoOptionsMap.value) {
+      if (vids.includes(id)) continue;
+      videoOptionsMap.value.delete(id);
+    }
+    updateQuery();
   }
   // 動画リストを追加
   function addVideoList(idList: string[]) {
@@ -127,6 +152,7 @@ export const useVideoListStore = defineStore("videoListStore", () => {
     contentCount,
     setVideoList,
     addVideoByText,
+    setVideoListByText,
     addVideoList,
     removeVideo,
     moveVideoIndex,
