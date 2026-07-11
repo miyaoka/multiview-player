@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { onClickOutside } from "@vueuse/core";
 import { computed, ref } from "vue";
+import { usePlayerStore } from "../stores/playerStore";
+import { useVideoListStore } from "../stores/videoListStore";
 import VideoUrlInput from "./VideoUrlInput.vue";
-import { usePlayerStore } from "@/stores/playerStore";
-import { useVideoListStore } from "@/stores/videoListStore";
+import IconClose from "~icons/mdi/close";
+import IconDotsVertical from "~icons/mdi/dots-vertical";
+import IconFastForward from "~icons/mdi/fast-forward";
+import IconPause from "~icons/mdi/pause";
+import IconPlay from "~icons/mdi/play";
+import IconPlus from "~icons/mdi/plus";
+import IconRewind from "~icons/mdi/rewind";
+import IconToggleSwitch from "~icons/mdi/toggle-switch";
+import IconToggleSwitchOffOutline from "~icons/mdi/toggle-switch-off-outline";
+import IconVolumeMute from "~icons/mdi/volume-mute";
 
 const playerStore = usePlayerStore();
 const videoListStore = useVideoListStore();
@@ -34,7 +44,7 @@ function onVideoUrlSubmit() {
 <template>
   <div
     ref="menuEl"
-    class="absolute right-2 top-2 z-10 flex w-fit flex-col items-end justify-center bg-yellow-400 shadow-md outline"
+    class="absolute top-2 right-2 z-10 flex w-fit flex-col items-end justify-center bg-yellow-400 shadow-md outline-solid"
     :class="{ 'rounded-xl': isOpen, 'rounded-full': !isOpen }"
   >
     <div class="flex flex-row">
@@ -45,7 +55,7 @@ function onVideoUrlSubmit() {
           @click="playerStore.playAll"
           title="Play all"
         >
-          <i class="i-mdi-play size-8" />
+          <IconPlay class="size-8" />
         </button>
 
         <button
@@ -54,7 +64,7 @@ function onVideoUrlSubmit() {
           @click="playerStore.pauseAll"
           title="Pause all"
         >
-          <i class="i-mdi-pause size-8" />
+          <IconPause class="size-8" />
         </button>
 
         <button
@@ -63,7 +73,7 @@ function onVideoUrlSubmit() {
           @click="playerStore.muteAll"
           title="Mute all"
         >
-          <i class="i-mdi-volume-mute size-8" />
+          <IconVolumeMute class="size-8" />
         </button>
       </div>
 
@@ -72,7 +82,7 @@ function onVideoUrlSubmit() {
         @click="toggleOpen"
         title="Menu"
       >
-        <i class="i-mdi-dots-vertical size-8" />
+        <IconDotsVertical class="size-8" />
       </button>
     </div>
     <div v-if="isOpen" class="flex flex-col items-end justify-center">
@@ -83,7 +93,7 @@ function onVideoUrlSubmit() {
           title="Seek all -10m"
           @click="playerStore.seekOffsetAll(-10 * 60)"
         >
-          <i class="i-mdi-rewind size-7" />
+          <IconRewind class="size-7" />
           <p class="absolute bottom-0 text-xs font-bold">-10m</p>
         </button>
         <button
@@ -92,7 +102,7 @@ function onVideoUrlSubmit() {
           title="Seek all -1m"
           @click="playerStore.seekOffsetAll(-60)"
         >
-          <i class="i-mdi-rewind size-6" />
+          <IconRewind class="size-6" />
           <p class="absolute bottom-0 text-xs font-bold">-1m</p>
         </button>
         <button
@@ -101,7 +111,7 @@ function onVideoUrlSubmit() {
           title="Seek all +1m"
           @click="playerStore.seekOffsetAll(60)"
         >
-          <i class="i-mdi-fast-forward size-6" />
+          <IconFastForward class="size-6" />
           <p class="absolute bottom-0 text-xs font-bold">+1m</p>
         </button>
         <button
@@ -110,7 +120,7 @@ function onVideoUrlSubmit() {
           title="Seek all +10m"
           @click="playerStore.seekOffsetAll(10 * 60)"
         >
-          <i class="i-mdi-fast-forward size-7" />
+          <IconFastForward class="size-7" />
           <p class="absolute bottom-0 text-xs font-bold">+10m</p>
         </button>
       </div>
@@ -122,12 +132,9 @@ function onVideoUrlSubmit() {
           @click="playerStore.toggleSyncSeek"
           title="Sync seek"
         >
-          <i
+          <component
+            :is="playerStore.isSyncSeek ? IconToggleSwitch : IconToggleSwitchOffOutline"
             class="size-8"
-            :class="{
-              'i-mdi-toggle-switch': playerStore.isSyncSeek,
-              'i-mdi-toggle-switch-off-outline': !playerStore.isSyncSeek,
-            }"
           />
           <p class="absolute bottom-0 text-xs font-bold">
             {{ playerStore.isSyncSeek ? "ON" : "OFF" }}
@@ -141,7 +148,7 @@ function onVideoUrlSubmit() {
           popovertarget="editListPopover"
           title="Add video"
         >
-          <i class="i-mdi-add size-8" />
+          <IconPlus class="size-8" />
         </button>
       </div>
 
@@ -149,15 +156,15 @@ function onVideoUrlSubmit() {
         popover
         ref="editListPopoverEl"
         id="editListPopover"
-        class="bottom-auto left-auto right-2 top-2 overflow-visible bg-transparent p-0"
+        class="top-2 right-2 bottom-auto left-auto overflow-visible bg-transparent p-0"
       >
         <VideoUrlInput @submit="onVideoUrlSubmit" />
         <button
-          class="absolute right-0 top-0 z-10 flex size-11 items-center justify-center text-gray-800 hover:text-gray-600"
+          class="absolute top-0 right-0 z-10 flex size-11 items-center justify-center text-gray-800 hover:text-gray-600"
           popovertarget="editListPopover"
           popovertargetaction="hide"
         >
-          <i class="i-mdi-close size-6"></i>
+          <IconClose class="size-6" />
         </button>
       </div>
     </div>

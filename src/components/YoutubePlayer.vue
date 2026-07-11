@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { useIntervalFn } from "@vueuse/core";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { useYouTubeIframeAPI } from "../composables/useYouTubeIframeApi";
+import { usePlayerStore } from "../stores/playerStore";
+import { useVideoListStore } from "../stores/videoListStore";
 import PlayerMenu from "./PlayerMenu.vue";
-import { useYouTubeIframeAPI } from "@/composables/useYouTubeIframeApi";
-import { usePlayerStore } from "@/stores/playerStore";
-import { useVideoListStore } from "@/stores/videoListStore";
 
 const props = defineProps<{
   videoId: string;
@@ -198,7 +198,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    class="flex size-full items-center justify-center outline outline-4 -outline-offset-4 outline-transparent"
+    class="flex size-full items-center justify-center outline-4 -outline-offset-4 outline-transparent outline-solid"
     :style="volumeStyle"
     @pointerenter="playerStore.setActiveVideoId(videoId)"
     @pointerleave="playerStore.setActiveVideoId(null)"

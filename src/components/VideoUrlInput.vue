@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { useVideoListStore } from "@/stores/videoListStore";
+import { useVideoListStore } from "../stores/videoListStore";
 
 const videoListStore = useVideoListStore();
 const urlInputTextarea = ref("");
@@ -23,7 +23,7 @@ function onUrlsSubmit(e: Event) {
 </script>
 
 <template>
-  <div class="flex flex-col overflow-hidden rounded-lg bg-white outline">
+  <div class="flex flex-col overflow-hidden rounded-lg bg-white outline-solid">
     <div class="relative flex min-h-11 place-items-center bg-gray-200 px-4 font-bold">
       <p>リスト追加</p>
     </div>

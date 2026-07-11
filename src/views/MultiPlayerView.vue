@@ -2,10 +2,10 @@
 import { useEventListener, useWindowSize } from "@vueuse/core";
 import { computed, onMounted } from "vue";
 import { useRoute, useRouter, type LocationQueryValue } from "vue-router";
-import GlobalMenu from "@/components/GlobalMenu.vue";
-import VideoGrid from "@/components/VideoGrid.vue";
-import { sortOptimalLayout, type GridLayout } from "@/libs/grid";
-import { useVideoListStore } from "@/stores/videoListStore";
+import GlobalMenu from "../components/GlobalMenu.vue";
+import VideoGrid from "../components/VideoGrid.vue";
+import { sortOptimalLayout, type GridLayout } from "../libs/grid";
+import { useVideoListStore } from "../stores/videoListStore";
 
 const route = useRoute();
 const router = useRouter();
@@ -74,7 +74,7 @@ useEventListener("paste", (evt: ClipboardEvent) => {
 
 <template>
   <main
-    class="relative flex h-screen w-screen items-center justify-center bg-gradient-to-b from-zinc-900 to-zinc-800"
+    class="relative flex h-screen w-screen items-center justify-center bg-linear-to-b from-zinc-900 to-zinc-800"
   >
     <VideoGrid v-if="gridLayout" :gridLayout="gridLayout" />
     <div v-else class="m-4 rounded-3xl bg-white p-8">

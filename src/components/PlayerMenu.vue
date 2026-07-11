@@ -1,9 +1,18 @@
 <script setup lang="ts">
 import { useTimeoutFn } from "@vueuse/core";
 import { computed, ref } from "vue";
-import { isTouchDevice, supportsDragAndDrop } from "@/libs/device";
-import { usePlayerStore } from "@/stores/playerStore";
-import { useVideoListStore } from "@/stores/videoListStore";
+import { isTouchDevice, supportsDragAndDrop } from "../libs/device";
+import { usePlayerStore } from "../stores/playerStore";
+import { useVideoListStore } from "../stores/videoListStore";
+import IconEllipsesBubble from "~icons/f7/ellipses-bubble";
+import IconEllipsesBubbleFill from "~icons/f7/ellipses-bubble-fill";
+import IconChevronDown from "~icons/mdi/chevron-down";
+import IconChevronUp from "~icons/mdi/chevron-up";
+import IconDrag from "~icons/mdi/drag";
+import IconRefresh from "~icons/mdi/refresh";
+import IconTrashCanOutline from "~icons/mdi/trash-can-outline";
+import IconVolumeHigh from "~icons/mdi/volume-high";
+import IconVolumeOff from "~icons/mdi/volume-off";
 
 const props = defineProps<{
   videoId: string;
@@ -105,14 +114,14 @@ function reload() {
 
 <template>
   <div
-    class="absolute -inset-0 bottom-auto z-10 flex h-16 items-center justify-center"
+    class="absolute inset-0 bottom-auto z-10 flex h-16 items-center justify-center"
     @mouseenter="onMouseenter"
     @mousemove="onMousemove"
     @mouseleave="onMouseleave"
   >
     <template v-if="isMenuVisible">
       <div
-        class="relative flex size-fit flex-row items-center justify-center rounded-full bg-white px-4 shadow-md outline"
+        class="relative flex size-fit flex-row items-center justify-center rounded-full bg-white px-4 shadow-md outline-solid"
       >
         <button
           v-if="canUseDragAndDrop"
@@ -122,7 +131,7 @@ function reload() {
           @dragstart="onDragstart"
           @dragend="onDragend"
         >
-          <i class="i-mdi-drag size-8" />
+          <IconDrag class="size-8" />
         </button>
 
         <button
@@ -131,13 +140,7 @@ function reload() {
           title="Toggle chat"
           @click="toggleChat"
         >
-          <i
-            class="size-8"
-            :class="{
-              'i-f7-ellipses-bubble': !showChat,
-              'i-f7-ellipses-bubble-fill': showChat,
-            }"
-          />
+          <component :is="showChat ? IconEllipsesBubbleFill : IconEllipsesBubble" class="size-8" />
         </button>
 
         <template v-if="!canUseDragAndDrop">
@@ -147,7 +150,7 @@ function reload() {
             @click="moveIndex(-1)"
             title="Move to prev"
           >
-            <i class="i-mdi-chevron-up size-8" />
+            <IconChevronUp class="size-8" />
           </button>
           <button
             :disabled="!hasNext"
@@ -155,7 +158,7 @@ function reload() {
             @click="moveIndex(1)"
             title="Move to next"
           >
-            <i class="i-mdi-chevron-down size-8" />
+            <IconChevronDown class="size-8" />
           </button>
         </template>
 
@@ -164,34 +167,31 @@ function reload() {
           @click="toggleMute"
           title="Toggle mute"
         >
-          <i
-            class="size-8"
-            :class="{ 'i-mdi-volume-off': isMuted, 'i-mdi-volume-high': !isMuted }"
-          />
+          <component :is="isMuted ? IconVolumeOff : IconVolumeHigh" class="size-8" />
         </button>
 
         <div class="absolute left-full ml-4 flex flex-row items-center justify-center gap-2">
           <div
-            class="flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline"
+            class="flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline-solid"
           >
             <button
               class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
               @click="remove"
               title="Remove"
             >
-              <i class="i-mdi-trash-can-outline size-8" />
+              <IconTrashCanOutline class="size-8" />
             </button>
           </div>
 
           <div
-            class="flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline"
+            class="flex size-fit flex-row items-center justify-center rounded-full bg-white shadow-md outline-solid"
           >
             <button
               class="grid size-10 place-items-center rounded-full hover:bg-gray-200"
               @click="reload"
               title="Reload player"
             >
-              <i class="i-mdi-refresh size-8" />
+              <IconRefresh class="size-8" />
             </button>
           </div>
         </div>

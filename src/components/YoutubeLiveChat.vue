@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import IconChevronLeft from "~icons/mdi/chevron-left";
+import IconChevronRight from "~icons/mdi/chevron-right";
 
 const props = defineProps<{
   videoId: string;
@@ -63,7 +65,7 @@ function togglePosition() {
 <template>
   <div class="absolute top-0" :style="containerStyle">
     <div
-      class="absolute size-full overflow-hidden rounded-b-xl outline outline-1 -outline-offset-1 outline-white/50"
+      class="absolute size-full overflow-hidden rounded-b-xl outline-1 -outline-offset-1 outline-white/50 outline-solid"
     >
       <div class="absolute w-[300px] overflow-hidden opacity-85" :style="clipStyle">
         <iframe class="absolute size-full" :src="chatUrl" />
@@ -78,12 +80,9 @@ function togglePosition() {
       @click="togglePosition"
     >
       <div class="grid size-5 place-items-center bg-zinc-800">
-        <i
+        <component
+          :is="isRight ? IconChevronLeft : IconChevronRight"
           class="size-5 text-white/60"
-          :class="{
-            'i-mdi-chevron-right': !isRight,
-            'i-mdi-chevron-left': isRight,
-          }"
         />
       </div>
     </button>

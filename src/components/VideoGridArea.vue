@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { useVideoListStore } from "../stores/videoListStore";
 import YoutubeLiveChat from "./YoutubeLiveChat.vue";
 import YoutubePlayer from "./YoutubePlayer.vue";
-import { useVideoListStore } from "@/stores/videoListStore";
 
 const props = defineProps<{
   videoId: string;
@@ -36,7 +36,7 @@ function ondrop() {
 
 <template>
   <div
-    class="_cell relative flex items-center justify-center overflow-hidden bg-zinc-900 shadow-[inset_10px_10px_50px_rgb(0_0_0_/_0.5)]"
+    class="_cell relative flex items-center justify-center overflow-hidden bg-zinc-900 shadow-[inset_10px_10px_50px_rgb(0_0_0/0.5)]"
     :class="{
       'opacity-50': videoId === videoListStore.draggingVideoId,
     }"
@@ -52,7 +52,7 @@ function ondrop() {
       v-if="videoListStore.draggingVideoId && videoListStore.draggingVideoId !== videoId"
       class="absolute size-full"
       :class="{
-        'bg-green-500/20  outline -outline-offset-4 outline-green-500': isDragover,
+        'bg-green-500/20  -outline-offset-4 outline-green-500 outline-solid': isDragover,
       }"
       @dragenter.prevent="ondragenter"
       @dragover.prevent="ondragover"
