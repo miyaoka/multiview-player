@@ -1,45 +1,45 @@
 # Multiview Player
 
-This template should help get you started developing with Vue 3 in Vite.
+YouTube動画を複窓しやすくするツール
 
-## Recommended IDE Setup
+https://multiview-player.vercel.app/
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## 機能
 
-## Type Support for `.vue` Imports in TS
+- URL貼り付けで複数のYouTube動画をグリッド表示
+- 全動画の一括操作（再生 / 停止 / ミュート / 前後シーク）
+- 連結シーク（1つの動画をシークすると全動画が連動）
+- ライブ配信のチャットオーバーレイ表示
+- ドラッグ&ドロップによる並び替え
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## 開発
 
-## Customize configuration
+### 必要環境
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
-
-## Project Setup
+[mise](https://mise.jdx.dev/) でツールバージョンを管理している（Node.js / pnpm、バージョンは `mise.toml` 参照）。
 
 ```sh
+mise install
 pnpm install
 ```
 
-### Compile and Hot-Reload for Development
+### コマンド
 
 ```sh
-pnpm dev
+pnpm dev       # 開発サーバー起動
+pnpm build     # プロダクションビルド
+pnpm test      # テスト実行 (Vitest)
+pnpm typecheck # 型チェック (vue-tsc)
+pnpm lint      # lint (oxlint + ESLint)
+pnpm fix       # lint 自動修正 + フォーマット (oxfmt)
 ```
 
-### Type-Check, Compile and Minify for Production
+pre-commit フックは [lefthook](https://github.com/evilmartians/lefthook) が管理しており、`pnpm install` 時に自動でインストールされる。
 
-```sh
-pnpm build
-```
+### 技術スタック
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
-
-```sh
-pnpm test:unit
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-pnpm lint
-```
+- [Vue 3](https://vuejs.org/) + [Pinia](https://pinia.vuejs.org/) + [Vue Router](https://router.vuejs.org/)
+- [Vite](https://vitejs.dev/) + [Vitest](https://vitest.dev/)
+- [Tailwind CSS v4](https://tailwindcss.com/)
+- [unplugin-icons](https://github.com/unplugin/unplugin-icons)（アイコン）
+- [ESLint](https://eslint.org/) + [oxlint](https://oxc.rs/docs/guide/usage/linter.html)（linter）/ [oxfmt](https://oxc.rs/docs/guide/usage/formatter.html)（formatter）
