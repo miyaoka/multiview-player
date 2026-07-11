@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import IconChevronDown from "~icons/mdi/chevron-down";
 import IconChevronLeft from "~icons/mdi/chevron-left";
 import IconChevronRight from "~icons/mdi/chevron-right";
+import IconChevronUp from "~icons/mdi/chevron-up";
 
 const props = defineProps<{
   videoId: string;
@@ -21,7 +23,9 @@ const msgPaddingWidth = 24;
 const authorWidth = 40;
 
 const containerPadding = 8;
-const containerHeight = "40%";
+// 縦サイズ（通常時 / フル表示時）
+const halfHeight = "40%";
+const fullHeight = "100%";
 
 const clipTop = headerHeight + tickerHeight + pinnedHeight;
 const clipBottom = footerHeight;
@@ -40,10 +44,12 @@ const clipStyle = {
 
 // 左右どちらに配置するか
 const isRight = ref(false);
+// 縦フルサイズ表示か
+const isFullHeight = ref(false);
 
 const containerStyle = computed(() => {
   return {
-    height: containerHeight,
+    height: isFullHeight.value ? fullHeight : halfHeight,
     width: `${clipWidth}px`,
     ...(isRight.value ? { right: 0 } : { left: 0 }),
   };
@@ -60,10 +66,14 @@ const chatUrl = computed(() => {
 function togglePosition() {
   isRight.value = !isRight.value;
 }
+
+function toggleFullHeight() {
+  isFullHeight.value = !isFullHeight.value;
+}
 </script>
 
 <template>
-  <div class="absolute top-0" :style="containerStyle">
+  <div class="group absolute top-0" :style="containerStyle">
     <div
       class="absolute size-full overflow-hidden rounded-b-xl outline-1 -outline-offset-1 outline-white/50 outline-solid"
     >
@@ -71,19 +81,27 @@ function togglePosition() {
         <iframe class="absolute size-full" :src="chatUrl" />
       </div>
     </div>
+    <!-- 左右トグル: 動画中央側の辺の中央（左配置なら右辺、右配置なら左辺）。親セルが overflow-hidden のため辺の内側に収める -->
     <button
-      class="absolute -bottom-6 grid size-11 place-items-center rounded-full"
-      :class="{
-        '-left-1': !isRight,
-        '-right-1': isRight,
-      }"
+      class="group/btn absolute top-1/2 grid size-11 -translate-y-1/2 place-items-center opacity-0 transition-opacity group-hover:opacity-100"
+      :class="isRight ? 'left-0' : 'right-0'"
       @click="togglePosition"
     >
-      <div class="grid size-5 place-items-center bg-zinc-800">
-        <component
-          :is="isRight ? IconChevronLeft : IconChevronRight"
-          class="size-5 text-white/60"
-        />
+      <div
+        class="grid size-7 place-items-center rounded-full border border-white/40 bg-black/60 shadow-md backdrop-blur-sm transition-transform group-hover/btn:scale-110"
+      >
+        <component :is="isRight ? IconChevronLeft : IconChevronRight" class="size-5 text-white" />
+      </div>
+    </button>
+    <!-- 縦サイズトグル: 下辺中央 -->
+    <button
+      class="group/btn absolute bottom-0 left-1/2 grid size-11 -translate-x-1/2 place-items-center opacity-0 transition-opacity group-hover:opacity-100"
+      @click="toggleFullHeight"
+    >
+      <div
+        class="grid size-7 place-items-center rounded-full border border-white/40 bg-black/60 shadow-md backdrop-blur-sm transition-transform group-hover/btn:scale-110"
+      >
+        <component :is="isFullHeight ? IconChevronUp : IconChevronDown" class="size-5 text-white" />
       </div>
     </button>
   </div>
