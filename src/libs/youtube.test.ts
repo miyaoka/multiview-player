@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getYouTubeVideoId, getThumbnailById } from "./youtube";
+import { getYouTubeVideoId, getThumbnailById, getVideoUrlById } from "./youtube";
 
 describe("getYouTubeVideoId", () => {
   it("watch URL からIDを取得できる", () => {
@@ -28,6 +28,12 @@ describe("getYouTubeVideoId", () => {
 
   it("live URL からIDを取得できる", () => {
     expect(getYouTubeVideoId("https://www.youtube.com/live/abc123")).toBe("abc123");
+  });
+});
+
+describe("getVideoUrlById", () => {
+  it("生成したURLからIDを復元できる（round-trip）", () => {
+    expect(getYouTubeVideoId(getVideoUrlById("abc123"))).toBe("abc123");
   });
 });
 

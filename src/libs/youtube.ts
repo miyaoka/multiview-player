@@ -5,6 +5,11 @@ export function getThumbnailById(id: string, quality: YoutubeImageQuality) {
   return `${base}${id}/${quality}default.jpg`;
 }
 
+// 動画 ID から標準 URL を組み立てる
+export function getVideoUrlById(id: string) {
+  return `https://www.youtube.com/watch?v=${id}`;
+}
+
 // YouTube の URL から動画 ID を取得する
 // 標準 URL: https://www.youtube.com/watch?v=videoId
 // 短縮 URL: https://youtu.be/videoId

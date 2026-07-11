@@ -39,20 +39,59 @@ export const useVideoListStore = defineStore("videoListStore", () => {
     });
   }
 
-  // 入力テキストから動画を追加
-  function addVideoByText(text: string) {
-    // スペース区切りで分割
-    const urls = text
+  // 入力テキストを空白・改行区切りのトークンに分割
+  function tokenizeText(text: string): string[] {
+    return text
       .split(/\s+/)
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
+  }
 
-    // id部分を取り出し
-    const vids = urls.flatMap((url) => getYouTubeVideoId(url) ?? []);
+  // 入力テキストから動画IDを抽出（解釈できないトークンは無視、重複除去）
+  function parseVideoIdsByText(text: string): string[] {
+    const vids = tokenizeText(text).flatMap((url) => getYouTubeVideoId(url) ?? []);
+    return Array.from(new Set(vids));
+  }
+
+  // 入力テキストから動画を追加
+  function addVideoByText(text: string) {
+    const vids = parseVideoIdsByText(text);
     if (vids.length === 0) return;
 
     // 動画リストに追加
     addVideoList(vids);
+  }
+
+  // 入力テキストでリスト全体を置き換え（編集欄からの反映。削除・追加・並び替えを含む）
+  // 既存動画のURL行をタイポすると動画が黙って消えるため、解釈できないトークンが
+  // 1つでもあれば適用せず invalidTokens として返し、呼び出し側でエラー表示する
+  // 空入力も適用しない（全行削除は編集ミスの可能性が高く、router.replace のため復元不能なので）
+  function setVideoListByText(text: string): { invalidTokens: string[] } {
+    const tokens = tokenizeText(text);
+    // エラー表示用なので重複除去する（v-forのkeyにも使われる）
+    const invalidTokens = Array.from(
+      new Set(tokens.filter((token) => getYouTubeVideoId(token) === undefined)),
+    );
+    if (invalidTokens.length > 0) return { invalidTokens };
+
+    const vids = parseVideoIdsByText(text);
+    if (vids.length === 0) return { invalidTokens: [] };
+
+    // videoIdListは並び替えると表示リセットされるため、既存の順序を保ったまま削除・追加のみ行う
+    const remainedIdList = videoIdList.value.filter((id) => vids.includes(id));
+    const addedIdList = vids.filter((id) => !videoIdList.value.includes(id));
+    videoIdList.value = [...remainedIdList, ...addedIdList];
+
+    // 表示順は入力テキストの順序をそのまま反映
+    videoIdGridOrder.value = vids;
+
+    // 削除された動画のオプションを破棄
+    for (const [id] of videoOptionsMap.value) {
+      if (vids.includes(id)) continue;
+      videoOptionsMap.value.delete(id);
+    }
+    updateQuery();
+    return { invalidTokens: [] };
   }
   // 動画リストを追加
   function addVideoList(idList: string[]) {
@@ -127,6 +166,7 @@ export const useVideoListStore = defineStore("videoListStore", () => {
     contentCount,
     setVideoList,
     addVideoByText,
+    setVideoListByText,
     addVideoList,
     removeVideo,
     moveVideoIndex,
