@@ -1,6 +1,6 @@
 # Multiview Player
 
-YouTube動画を複窓しやすくするツール。Vue 3 の SPA で、Vercel にデプロイされる。
+YouTube動画を複窓しやすくするツール。Vue 3 の SPA で、Cloudflare Workers にデプロイされる。
 
 ## 検証コマンド
 
