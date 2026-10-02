@@ -9,19 +9,22 @@ pnpm typecheck # vue-tsc
 pnpm lint      # oxlint (.ts) + ESLint (.ts/.vue)
 pnpm fix       # lint 自動修正 + oxfmt フォーマット
 pnpm test      # Vitest (jsdom)
+pnpm build     # cf build（出力先は .cloudflare/output）
+pnpm run deploy:check # 直前の pnpm build の出力に対する cf deploy の dry run（`pnpm deploy` は pnpm の組み込みコマンドなので `run` を付ける）
 ```
 
 ## 技術スタック
 
-| レイヤー       | 技術                                             |
-| -------------- | ------------------------------------------------ |
-| フロントエンド | Vue 3 + Pinia + Vue Router                       |
-| ビルド         | Vite（`@tailwindcss/vite` プラグイン）           |
-| CSS            | Tailwind CSS v4                                  |
-| アイコン       | unplugin-icons（per-icon component import）      |
-| テスト         | Vitest + jsdom（テストは実装と同ディレクトリ）   |
-| リンター       | oxlint（TypeScript）/ ESLint（Vue + TypeScript） |
-| フォーマッタ   | oxfmt                                            |
+| レイヤー       | 技術                                                                                               |
+| -------------- | -------------------------------------------------------------------------------------------------- |
+| フロントエンド | Vue 3 + Pinia + Vue Router                                                                         |
+| ビルド         | `cf build` → Vite（`@tailwindcss/vite`、`@cloudflare/vite-plugin`）。出力先は `.cloudflare/output` |
+| ホスティング   | Cloudflare Workers（静的アセットのみ。`main` への push で GitHub Actions がデプロイ）              |
+| CSS            | Tailwind CSS v4                                                                                    |
+| アイコン       | unplugin-icons（per-icon component import）                                                        |
+| テスト         | Vitest + jsdom（テストは実装と同ディレクトリ）                                                     |
+| リンター       | oxlint（TypeScript）/ ESLint（Vue + TypeScript）                                                   |
+| フォーマッタ   | oxfmt                                                                                              |
 
 ## 規約
 
