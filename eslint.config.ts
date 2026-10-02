@@ -7,7 +7,7 @@ import pluginVue from "eslint-plugin-vue";
 import type { ESLint } from "eslint";
 
 export default defineConfigWithVueTs(
-  { ignores: ["dist/**", "node_modules/**"] },
+  { ignores: [".cloudflare/**", "node_modules/**"] },
 
   // Vue 推奨設定
   pluginVue.configs["flat/essential"],
