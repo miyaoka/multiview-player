@@ -1,0 +1,17 @@
+name: "Setup Environment"
+description: "開発環境の共通セットアップ（mise、依存関係）"
+
+runs:
+  using: "composite"
+  steps:
+    # mise によるランタイム環境のセットアップ（Node.js / pnpm、バージョンは mise.toml が SSOT）
+    - name: Set up by mise
+      uses: jdx/mise-action@e6a8b3978addb5a52f2b4cd9d91eafa7f0ab959d # v4
+      with:
+        install: true
+        cache: true
+
+    # frozen-lockfile: lock ファイルを更新せず、正確なバージョンをインストール
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile

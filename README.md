@@ -2,7 +2,7 @@
 
 YouTube動画を複窓しやすくするツール
 
-https://multiview-player.vercel.app/
+https://multiview-player.miyaoka.workers.dev/
 
 ## 機能
 
@@ -28,12 +28,15 @@ pnpm install
 
 ```sh
 pnpm dev       # 開発サーバー起動
-pnpm build     # プロダクションビルド
+pnpm build     # プロダクションビルド (cf build)
+pnpm preview   # ビルド結果を Workers ランタイムで配信
 pnpm test      # テスト実行 (Vitest)
 pnpm typecheck # 型チェック (vue-tsc)
 pnpm lint      # lint (oxlint + ESLint)
 pnpm fix       # lint 自動修正 + フォーマット (oxfmt)
 ```
+
+`main` への push で、GitHub Actions が Cloudflare Workers にデプロイする。
 
 pre-commit フックは [lefthook](https://github.com/evilmartians/lefthook) が管理しており、`pnpm install` 時に自動でインストールされる。
 
@@ -41,6 +44,7 @@ pre-commit フックは [lefthook](https://github.com/evilmartians/lefthook) が
 
 - [Vue 3](https://vuejs.org/) + [Pinia](https://pinia.vuejs.org/) + [Vue Router](https://router.vuejs.org/)
 - [Vite](https://vitejs.dev/) + [Vitest](https://vitest.dev/)
+- [Cloudflare Workers](https://developers.cloudflare.com/workers/)（ホスティング、`cf` CLI でビルドとデプロイ）
 - [Tailwind CSS v4](https://tailwindcss.com/)
 - [unplugin-icons](https://github.com/unplugin/unplugin-icons)（アイコン）
 - [ESLint](https://eslint.org/) + [oxlint](https://oxc.rs/docs/guide/usage/linter.html)（linter）/ [oxfmt](https://oxc.rs/docs/guide/usage/formatter.html)（formatter）
